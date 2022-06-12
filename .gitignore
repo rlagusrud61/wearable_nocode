@@ -1,6 +1,6 @@
 #IntelliJ
 .idea/
-out
+out/
 .idea_modules/
 *.iml
 *.ipr
