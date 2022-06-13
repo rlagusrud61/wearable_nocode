@@ -10,11 +10,9 @@ import java.util.List;
 class Choices implements ControlListener {
 
     Pin pin;
-    String selected;
     ControlP5 cp5;
 
     static PApplet p;
-
     Choices(Pin pin) {
 
         this.pin = pin;
@@ -43,7 +41,8 @@ class Choices implements ControlListener {
                                                       public void controlEvent(CallbackEvent theEvent) {
                                                           switch (theEvent.getAction()) {
                                                               case (ControlP5.ACTION_RELEASE):
-                                                                  PApplet.println(selected = theEvent.getController().getLabel());
+                                                                  PApplet.println(pin.selected = theEvent.getController().getLabel());
+                                                                  pin.menu.show();
                                                           }
                                                       }
                                                   }
@@ -51,20 +50,18 @@ class Choices implements ControlListener {
     }
 
 
-    public void display() {
-        cp5.get(ScrollableList.class, pin.pinNum).show();
-        //push();
-        //fill(0);
-        //int spacing = 20;
-        //for (int i = 0; i < sensors.size(); i ++ ) {
-        //  text(sensors.get(i), width/5, spacing + 300);
-        //  spacing += 40;
-        //}
-        //pop();
+    public void show() {
+        ScrollableList pinController = cp5.get(ScrollableList.class, pin.pinNum);
+        if (pinController != null ){
+            pinController.show();
+        }
     }
 
     public void hide() {
-        cp5.get(ScrollableList.class, pin.pinNum).hide();
+        ScrollableList pinController = cp5.get(ScrollableList.class, pin.pinNum);
+        if (pinController != null ){
+            pinController.hide();
+        }
     }
 
     public void controlEvent(ControlEvent theEvent) {

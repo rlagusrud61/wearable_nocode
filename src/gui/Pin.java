@@ -14,6 +14,7 @@ import java.util.Set;
 
 abstract class Pin {
 
+    String selected;
     private final GUI_sketch gui_sketch;
     PShape shape, inputBox, connectionBox;
 
@@ -143,12 +144,10 @@ abstract class Pin {
     public void mouseRelease() {
         if (gui_sketch.connecting && locked) {
             if (connectedPin == null && connectedExpression != null) {
-                PApplet.println(this.pinNum, " ------------- " + connectedExpression);
-                gui_sketch.dataStructure.addConnection(this.node, connectedExpression.node);
+//                gui_sketch.dataStructure.addConnection(this.node, connectedExpression.node);
                 gui_sketch.background.connections.add(new Connection(gui_sketch, this, connectedExpression));
             } else if (connectedPin != null && !connectedPin.equals(this)) { // avoiding connection to itself
-                PApplet.println(this.pinNum, " ----------------- " + connectedPin.pinNum);
-                gui_sketch.dataStructure.addConnection(connectedPin.node, this.node);
+//                gui_sketch.dataStructure.addConnection(connectedPin.node, this.node);
                 gui_sketch.background.connections.add(new Connection(gui_sketch, this, connectedPin));
             }
             gui_sketch.connecting = false;
@@ -168,8 +167,8 @@ abstract class Pin {
         gui_sketch.push();
         gui_sketch.fill(0);
         gui_sketch.textSize(15);
-        if (menu.choices.selected != null) {
-            gui_sketch.text(menu.choices.selected, position.x - (size / 2) + 15, position.y);
+        if (selected != null) {
+            gui_sketch.text(selected, position.x - (size / 2) + 15, position.y);
         }
         gui_sketch.text(pinNum, position.x + 50, position.y + 50);
         gui_sketch.pop();

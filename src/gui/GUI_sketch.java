@@ -6,6 +6,9 @@ import main.Node;
 import main.SensorNode;
 import processing.core.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class GUI_sketch extends PApplet {
 
 
@@ -19,6 +22,7 @@ public class GUI_sketch extends PApplet {
 
         Choices.setPApplet(this);
         EditableNumberBox.setPApplet(this);
+        Operator.setPApplet(this);
         background = new Background(this);
         menuState = false;
 
@@ -72,6 +76,11 @@ public class GUI_sketch extends PApplet {
         PVector mousePos = new PVector(mouseX, mouseY);
         if (mousePos.x > 750 && mousePos.y < 50) {
             PApplet.println("DONE");
+
+            List<OutputPin> outputPins = background.pins.stream()
+                    .filter(OutputPin.class::isInstance)
+                    .map(OutputPin.class::cast).toList();
+
         }
     }
 
@@ -92,6 +101,8 @@ public class GUI_sketch extends PApplet {
         for (Pin pin : background.pins) {
             pin.mouseRelease();
         }
+
+        PApplet.println(background.connections.toString());
     }
 
 

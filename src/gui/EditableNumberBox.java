@@ -11,17 +11,19 @@ class EditableNumberBox {
 // Editable Numberbox for ControlP5
 
     static GUI_sketch p;
+    String pinNum;
     PVector pos;
     ControlP5 cp5;
 
-    EditableNumberBox(PVector pos) {
+    EditableNumberBox(String pinNum, PVector pos) {
 
         this.pos = pos;
+        this.pinNum = pinNum;
 
         if (cp5 == null) {
             cp5 = new ControlP5(p);
         }
-        Numberbox n = cp5.addNumberbox("numbers")
+        Numberbox n = cp5.addNumberbox(pinNum)
                 .setSize(30, 20)
                 .setPosition(pos.x, pos.y)
                 .setValue(0)

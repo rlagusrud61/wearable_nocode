@@ -12,10 +12,11 @@ class Connection {
     Pin pin2;
     ExpressionNode exp;
 
-    PVector position;
-    int size;
+    private PVector position;
+    private int size;
     PShape configMenu;
 
+    // Direct connection between pin1 and pin2 shouldn't be necessary anyways
     Connection(GUI_sketch gui_sketch, Pin pin1, Pin pin2) {
         this.gui_sketch = gui_sketch;
         PApplet.println("new connection with " + pin1.pinNum + " with " + pin2.pinNum);
@@ -35,11 +36,11 @@ class Connection {
         this.pin1 = pin;
         this.exp = expressionNode;
 
-        if (pin instanceof InputPin){
+        if (pin instanceof InputPin) {
             expressionNode.addInputConnection((InputPin) pin);
+        } else if (pin instanceof OutputPin) {
+            expressionNode.addOutputConnection((OutputPin) pin);
         }
-
-
 
     }
 
@@ -59,5 +60,17 @@ class Connection {
 
     public void openMenu() {
         configMenu.setVisible(true);
+    }
+
+    @Override
+    public String toString() {
+        String result= null;
+        if (exp != null ){
+            result = pin1.pinNum + " <-> " + exp;
+        }
+        else if (pin2 != null ){
+            result = pin1.pinNum + " <-> " + pin2.pinNum;
+        }
+        return result;
     }
 }

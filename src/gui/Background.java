@@ -43,11 +43,10 @@ class Background {
         for (Connection connection : connections) {
             connection.display();
         }
-
         expressionNode.display();
-        if (!gui_sketch.menuState) {
-            expressionNode.edNumBox.show();
-        }
+//        if (!gui_sketch.menuState) {
+//            expressionNode.edNumBox.show();
+//        }
     }
 
     public void hide() {

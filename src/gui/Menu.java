@@ -19,7 +19,7 @@ class Menu {
     public void show() {
         isActive = true;
         display();
-        choices.display();
+        choices.show();
     }
 
     public void hide() {
