@@ -22,10 +22,10 @@ class EditableNumberBox {
             cp5 = new ControlP5(p);
         }
         Numberbox n = cp5.addNumberbox("numbers")
-                .setSize(100, 20)
+                .setSize(30, 20)
                 .setPosition(pos.x, pos.y)
-                .setValue(0);
-
+                .setValue(0)
+                .setDecimalPrecision(0);
         makeEditable(n);
     }
 

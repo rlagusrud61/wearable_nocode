@@ -71,6 +71,7 @@ public class GUI_sketch extends PApplet {
     public void mouseClicked() {
         PVector mousePos = new PVector(mouseX, mouseY);
         if (mousePos.x > 750 && mousePos.y < 50) {
+            PApplet.println("DONE");
         }
     }
 
@@ -91,7 +92,6 @@ public class GUI_sketch extends PApplet {
         for (Pin pin : background.pins) {
             pin.mouseRelease();
         }
-        background.expressionNode.mouseRelease(mousePos);
     }
 
 

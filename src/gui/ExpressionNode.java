@@ -6,6 +6,8 @@ import processing.core.PConstants;
 import processing.core.PShape;
 import processing.core.PVector;
 
+import java.util.ArrayList;
+
 class ExpressionNode {
 
 
@@ -19,6 +21,8 @@ class ExpressionNode {
     PShape shape, expressionBox, inputConnect, outputConnect;
     main.ExpressionNode node;
 
+    ArrayList<InputPin> connectedInputs;
+
 
     ExpressionNode(GUI_sketch gui_sketch, main.ExpressionNode node, PVector position) {
         this.gui_sketch = gui_sketch;
@@ -26,11 +30,12 @@ class ExpressionNode {
         this.position = position;
         this.size = 200;
         this.connectSize = 20;
+        this.connectedInputs = new ArrayList<>();
 
         this.inputConnectPos = new PVector(position.x - 20, position.y + size / 2);
         this.outputConnectPos = new PVector(position.x + size, position.y + size / 2);
 
-        edNumBox = new EditableNumberBox(new PVector(position.x, position.y + 50));
+        edNumBox = new EditableNumberBox(new PVector(position.x +  size / 2 + 50, position.y + 45));
 
         setShapes();
     }
@@ -49,24 +54,6 @@ class ExpressionNode {
     }
 
 
-//    public void mouseDrag(PVector mousePos) {
-//        PApplet.println(gui_sketch.connecting);
-//        if (gui_sketch.connecting &&
-//                mousePos.x > inputConnectPos.x && mousePos.x < inputConnectPos.x + connectSize &&
-//                mousePos.y > inputConnectPos.x && mousePos.y < inputConnectPos.y + connectSize) {
-//        }
-//    }
-
-    public void mouseRelease(PVector mousePos) {
-        if (gui_sketch.connecting &&
-                mousePos.x > inputConnectPos.x && mousePos.x < inputConnectPos.x + connectSize &&
-                mousePos.y > inputConnectPos.x && mousePos.y < inputConnectPos.y + connectSize) {
-            PApplet.println("MOUSE RELEASED") ;
-        }
-
-
-    }
-
     public void show() {
         edNumBox.show();
     }
@@ -81,7 +68,21 @@ class ExpressionNode {
         gui_sketch.push();
         gui_sketch.fill(0);
         gui_sketch.text("Expression", position.x + 10, position.y + 20);
+        gui_sketch.text("IF ", position.x + 10, position.y + 60);
+
+        if (connectedInputs != null) {
+            int count = 0;
+            for (InputPin connectedInput : connectedInputs) {
+                count ++ ;
+                gui_sketch.text(" Value of " + connectedInput.pinNum + " > ", position.x + 30, position.y + 60 * count);
+            }
+        }
 
         gui_sketch.pop();
+    }
+
+    public void addInputConnection(InputPin pin) {
+        PApplet.println("Added pin " + pin.pinNum);
+        connectedInputs.add(pin);
     }
 }

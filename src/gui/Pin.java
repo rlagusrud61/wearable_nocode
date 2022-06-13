@@ -130,30 +130,27 @@ abstract class Pin {
                     mousePos.y > expressionNode.inputConnectPos.y && mousePos.y < expressionNode.inputConnectPos.y + expressionNode.connectSize) {
                 gui_sketch.connecting = true;
                 connectedExpression = expressionNode;
-                PApplet.println("I'm " + this.pinNum + " connecting to " + expressionNode);
+//                PApplet.println("I'm " + this.pinNum + " connecting to " + expressionNode);
             } else if (this instanceof OutputPin && mousePos.x > expressionNode.outputConnectPos.x && mousePos.x < expressionNode.outputConnectPos.x + expressionNode.connectSize &&
                     mousePos.y > expressionNode.outputConnectPos.y && mousePos.y < expressionNode.outputConnectPos.y + expressionNode.connectSize) {
                 gui_sketch.connecting = true;
                 connectedExpression = expressionNode;
-                PApplet.println("I'm " + this.pinNum + " connecting to " + expressionNode);
+//                PApplet.println("I'm " + this.pinNum + " connecting to " + expressionNode);
             }
         }
     }
 
     public void mouseRelease() {
         if (gui_sketch.connecting && locked) {
-            PApplet.println(this.pinNum);
             if (connectedPin == null && connectedExpression != null) {
                 PApplet.println(this.pinNum, " ------------- " + connectedExpression);
                 gui_sketch.dataStructure.addConnection(this.node, connectedExpression.node);
                 gui_sketch.background.connections.add(new Connection(gui_sketch, this, connectedExpression));
             } else if (connectedPin != null && !connectedPin.equals(this)) { // avoiding connection to itself
-
                 PApplet.println(this.pinNum, " ----------------- " + connectedPin.pinNum);
                 gui_sketch.dataStructure.addConnection(connectedPin.node, this.node);
                 gui_sketch.background.connections.add(new Connection(gui_sketch, this, connectedPin));
             }
-
             gui_sketch.connecting = false;
             locked = false;
         }
