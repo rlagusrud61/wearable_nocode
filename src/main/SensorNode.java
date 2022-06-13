@@ -1,7 +1,7 @@
 package main;
 
 
-public class SensorNode extends Node {
+public class SensorNode extends IONode {
 
 
     SensorNode(String port) {

@@ -1,6 +1,7 @@
 package gui;
 
 import main.DataStructure;
+import main.IONode;
 import main.Node;
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -24,19 +25,17 @@ abstract class Pin {
     boolean locked; // for dragging
     Menu menu;
 
-    String selectedSensor;
-
-    Node node;
+    IONode node;
 
     PVector connectionPos;
     boolean mouseOverConnection;
 
     boolean clickable;
 
-    Pin connectedPin ;
+    Pin connectedPin;
     ExpressionNode connectedExpression;
 
-    Pin(GUI_sketch gui_sketch, Node node, PVector position) {
+    Pin(GUI_sketch gui_sketch, IONode node, PVector position) {
         this.gui_sketch = gui_sketch;
         this.node = node;
         this.clickable = true;
@@ -110,7 +109,7 @@ abstract class Pin {
         }
     }
 
-    public void mouseDrag(ArrayList<ExpressionNode> expressionNodes,ArrayList<Pin> otherPins, PVector mousePos) {
+    public void mouseDrag(ExpressionNode expressionNode, ArrayList<Pin> otherPins, PVector mousePos) {
 
         if (locked) {
             offset = mousePos;
@@ -127,27 +126,37 @@ abstract class Pin {
                 }
             }
 
-            for (ExpressionNode expressionNode : expressionNodes) {
-                if (gui_sketch.connecting &&
-                        mousePos.x > expressionNode.inputConnectPos.x && mousePos.x < expressionNode.inputConnectPos.x + expressionNode.connectSize &&
-                        mousePos.y > expressionNode.inputConnectPos.x && mousePos.y < expressionNode.inputConnectPos.y + expressionNode.connectSize) {
-                    PApplet.println("WEEEEEEEEEEEEEEEEEEEEEE");
-                    gui_sketch.connecting = true;
-                    connectedExpression = expressionNode;
-                }
+            if (this instanceof InputPin && mousePos.x > expressionNode.inputConnectPos.x && mousePos.x < expressionNode.inputConnectPos.x + expressionNode.connectSize &&
+                    mousePos.y > expressionNode.inputConnectPos.y && mousePos.y < expressionNode.inputConnectPos.y + expressionNode.connectSize) {
+                gui_sketch.connecting = true;
+                connectedExpression = expressionNode;
+                PApplet.println("I'm " + this.pinNum + " connecting to " + expressionNode);
+            } else if (this instanceof OutputPin && mousePos.x > expressionNode.outputConnectPos.x && mousePos.x < expressionNode.outputConnectPos.x + expressionNode.connectSize &&
+                    mousePos.y > expressionNode.outputConnectPos.y && mousePos.y < expressionNode.outputConnectPos.y + expressionNode.connectSize) {
+                gui_sketch.connecting = true;
+                connectedExpression = expressionNode;
+                PApplet.println("I'm " + this.pinNum + " connecting to " + expressionNode);
             }
         }
     }
 
     public void mouseRelease() {
-        if (gui_sketch.connecting) {
-                if (!connectedPin.equals(this)) { // only when it's not the same pin
-                    gui_sketch.dataStructure.addConnection(connectedPin.node, this.node);
-                    gui_sketch.background.connections.add(new Connection(gui_sketch, this, connectedPin));
-                }
+        if (gui_sketch.connecting && locked) {
+            PApplet.println(this.pinNum);
+            if (connectedPin == null && connectedExpression != null) {
+                PApplet.println(this.pinNum, " ------------- " + connectedExpression);
+                gui_sketch.dataStructure.addConnection(this.node, connectedExpression.node);
+                gui_sketch.background.connections.add(new Connection(gui_sketch, this, connectedExpression));
+            } else if (connectedPin != null && !connectedPin.equals(this)) { // avoiding connection to itself
+
+                PApplet.println(this.pinNum, " ----------------- " + connectedPin.pinNum);
+                gui_sketch.dataStructure.addConnection(connectedPin.node, this.node);
+                gui_sketch.background.connections.add(new Connection(gui_sketch, this, connectedPin));
             }
-        gui_sketch.connecting = false;
-        locked = false;
+
+            gui_sketch.connecting = false;
+            locked = false;
+        }
     }
 
     public void hide() {

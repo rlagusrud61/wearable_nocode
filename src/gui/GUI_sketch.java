@@ -35,17 +35,19 @@ public class GUI_sketch extends PApplet {
 //        }
 
         int sensorNodeCount = 0;
-        int actuatorNodeCount = 0 ;
-        for (Node node: dataStructure.nodes){
-            if (node instanceof SensorNode){
+        int actuatorNodeCount = 0;
+        for (Node node : dataStructure.nodes) {
+            if (node instanceof SensorNode) {
                 sensorNodeCount++;
-                background.pins.add(new InputPin(this, node, new PVector(75, sensorNodeCount * 200  )));
-            }
-            else if (node instanceof ActuatorNode){
+                background.pins.add(new InputPin(this, (SensorNode) node, new PVector(75, sensorNodeCount * 200)));
+            } else if (node instanceof ActuatorNode) {
                 actuatorNodeCount++;
-                background.pins.add(new OutputPin(this, node, new PVector(720, actuatorNodeCount * 200 )));
+                background.pins.add(new OutputPin(this, (ActuatorNode) node, new PVector(720, actuatorNodeCount * 200)));
+            } else if (node instanceof main.ExpressionNode) {
+                background.expressionNode = new ExpressionNode(this, (main.ExpressionNode) node, new PVector(300, 150));
             }
         }
+
     }
 
 
@@ -76,12 +78,12 @@ public class GUI_sketch extends PApplet {
         PVector mousePos = new PVector(mouseX, mouseY);
 
         for (Pin pin : background.pins) {
-            pin.mouseDrag(background.expressionNodes, background.pins, mousePos);
+            pin.mouseDrag(background.expressionNode, background.pins, mousePos);
         }
 
-        for (ExpressionNode expressionNode : background.expressionNodes) {
-            expressionNode.mouseDrag(mousePos);
-        }
+//        for (ExpressionNode expressionNode : background.expressionNodes) {
+//            expressionNode.mouseDrag(mousePos);
+//        }
     }
 
     public void mouseReleased() {
@@ -89,9 +91,7 @@ public class GUI_sketch extends PApplet {
         for (Pin pin : background.pins) {
             pin.mouseRelease();
         }
-        for (ExpressionNode expressionNode : background.expressionNodes) {
-            expressionNode.mouseRelease(mousePos);
-        }
+        background.expressionNode.mouseRelease(mousePos);
     }
 
 

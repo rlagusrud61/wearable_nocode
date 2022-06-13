@@ -26,18 +26,20 @@ public class DataStructure {
         ActuatorNode D10 = new ActuatorNode("D10") ;
         ActuatorNode D11 = new ActuatorNode("D11") ;
 
+        ExpressionNode exp = new ExpressionNode();
+
         nodes.add(A0);
         nodes.add(A1);
         nodes.add(A2);
         nodes.add(D9);
         nodes.add(D10);
         nodes.add(D11);
+        nodes.add(exp);
 
     }
 
     public void addConnection(Node n1, Node n2){
         if(n1 instanceof ActuatorNode){
-            PApplet.println("here");
             n1.addChild(n2);
         } else if (n2 instanceof ActuatorNode){
             n2.addChild(n1);

@@ -1,5 +1,6 @@
 package gui;
 
+import main.Node;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PShape;
@@ -16,10 +17,12 @@ class ExpressionNode {
     int size;
     int connectSize;
     PShape shape, expressionBox, inputConnect, outputConnect;
+    main.ExpressionNode node;
 
 
-    ExpressionNode(GUI_sketch gui_sketch, PVector position) {
+    ExpressionNode(GUI_sketch gui_sketch, main.ExpressionNode node, PVector position) {
         this.gui_sketch = gui_sketch;
+        this.node = node;
         this.position = position;
         this.size = 200;
         this.connectSize = 20;
@@ -46,21 +49,19 @@ class ExpressionNode {
     }
 
 
-    public void mouseDrag(PVector mousePos) {
-        PApplet.println(gui_sketch.connecting);
-        if (gui_sketch.connecting &&
-                mousePos.x > inputConnectPos.x && mousePos.x < inputConnectPos.x + connectSize &&
-                mousePos.y > inputConnectPos.x && mousePos.y < inputConnectPos.y + connectSize) {
-        }
+//    public void mouseDrag(PVector mousePos) {
+//        PApplet.println(gui_sketch.connecting);
+//        if (gui_sketch.connecting &&
+//                mousePos.x > inputConnectPos.x && mousePos.x < inputConnectPos.x + connectSize &&
+//                mousePos.y > inputConnectPos.x && mousePos.y < inputConnectPos.y + connectSize) {
+//        }
+//    }
 
-
-    }
     public void mouseRelease(PVector mousePos) {
-
         if (gui_sketch.connecting &&
                 mousePos.x > inputConnectPos.x && mousePos.x < inputConnectPos.x + connectSize &&
                 mousePos.y > inputConnectPos.x && mousePos.y < inputConnectPos.y + connectSize) {
-            PApplet.println("WEEEEEEEEEEEEEEEEEEEEEE");
+            PApplet.println("MOUSE RELEASED") ;
         }
 
 
