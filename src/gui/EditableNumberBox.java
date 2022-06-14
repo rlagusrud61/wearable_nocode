@@ -28,6 +28,9 @@ class EditableNumberBox {
         makeEditable(n);
     }
 
+    public int getValue(){
+        return (int) cp5.getController(pinNum).getValue();
+    }
     public void show() {
         cp5.getController(pinNum).show();
     }

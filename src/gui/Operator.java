@@ -21,7 +21,7 @@ public class Operator extends Choices implements CallbackListener {
             cp5 = new ControlP5(p);
         }
 
-        ScrollableList list = cp5.addScrollableList("op"+ pin.pinNum)
+        ScrollableList list = cp5.addScrollableList("op" + pin.pinNum)
                 .setPosition(pos.x, pos.y)
                 .setSize(30, 100)
                 .setBarHeight(20)
@@ -31,28 +31,30 @@ public class Operator extends Choices implements CallbackListener {
                 .show();
 
 
-        cp5.getController("op"+pin.pinNum).addCallback(new CallbackListener() {
-                                                                 public void controlEvent(CallbackEvent theEvent) {
-                                                                     switch (theEvent.getAction()) {
-                                                                         case (ControlP5.ACTION_RELEASE):
-                                                                             PApplet.println(theEvent.getController().getLabel());
-                                                                     }
+        cp5.getController("op" + pin.pinNum).addCallback(new CallbackListener() {
+                                                             public void controlEvent(CallbackEvent theEvent) {
+                                                                 switch (theEvent.getAction()) {
+                                                                     case (ControlP5.ACTION_RELEASE):
+                                                                         PApplet.println(theEvent.getController().getLabel());
                                                                  }
                                                              }
+                                                         }
         );
     }
 
-    public String getValue(){
+    @Override
+    public String getValue() {
         return cp5.getController("op" + pin.pinNum).getLabel();
     }
+
     @Override
     public void show() {
-        cp5.getController("op"+pin.pinNum).show();
+        cp5.getController("op" + pin.pinNum).show();
     }
 
     @Override
     public void hide() {
-        cp5.getController("op"+pin.pinNum).hide();
+        cp5.getController("op" + pin.pinNum).hide();
     }
 
     @Override

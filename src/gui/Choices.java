@@ -50,6 +50,9 @@ class Choices implements ControlListener {
     }
 
 
+    public String getValue() {
+        return cp5.getController(pin.pinNum).getLabel();
+    }
     public void show() {
         cp5.getController(pin.pinNum).show();
     }
