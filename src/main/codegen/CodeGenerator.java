@@ -1,8 +1,10 @@
 package main.codegen;
 
 
-import main.DataStructure;
+import main.*;
+import processing.core.PApplet;
 
+import javax.swing.*;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -11,15 +13,15 @@ import java.util.List;
 public class CodeGenerator {
 
     enum AnalogInput {
+        A0,
         A1,
         A2,
-        A3,
     }
 
-    enum DigitalOutput {
-        D1,
-        D2,
-        D3,
+    public enum DigitalOutput {
+        D9,
+        D10,
+        D11,
     }
 
     interface ProgramNode {
@@ -53,7 +55,7 @@ public class CodeGenerator {
         }
     }
 
-    enum ComparisonOperator {
+    public enum ComparisonOperator {
         EQUALS,
         NOT_EQUALS,
         GREATER_THAN,
@@ -62,8 +64,8 @@ public class CodeGenerator {
         SMALLER_THAN_EQUALS,
     }
 
-    record DoubleComparisonExpression(ComparisonOperator operator, DoubleExpression leftExpr,
-                                      DoubleExpression rightExpr) implements BoolExpression {
+    public record DoubleComparisonExpression(ComparisonOperator operator, DoubleExpression leftExpr,
+                                             DoubleExpression rightExpr) implements BoolExpression {
         @Override
         public void accept(ProgramVisitor visitor) {
             leftExpr.accept(visitor);
@@ -72,14 +74,14 @@ public class CodeGenerator {
         }
     }
 
-    enum BoolOperator {
+    public enum BoolOperator {
         AND,
         OR,
         XOR,
     }
 
-    record BoolOperationExpression(BoolOperator operator, BoolExpression leftExpr,
-                                   BoolExpression rightExpr) implements BoolExpression {
+    public record BoolOperationExpression(BoolOperator operator, BoolExpression leftExpr,
+                                          BoolExpression rightExpr) implements BoolExpression {
         @Override
         public void accept(ProgramVisitor visitor) {
             leftExpr.accept(visitor);
@@ -96,11 +98,11 @@ public class CodeGenerator {
         }
     }
 
-    interface Statement extends ProgramNode {
+    public interface Statement extends ProgramNode {
 
     }
 
-    record DigitalOutputStatement(DigitalOutput digitalOutput, BoolExpression expr) implements Statement {
+    public record DigitalOutputStatement(DigitalOutput digitalOutput, BoolExpression expr) implements Statement {
         @Override
         public void accept(ProgramVisitor visitor) {
             expr.accept(visitor);
@@ -108,7 +110,7 @@ public class CodeGenerator {
         }
     }
 
-    static class Program implements ProgramNode {
+    public static class Program implements ProgramNode {
         public final int updateFrequency;
         public final List<Statement> statements;
 
@@ -136,6 +138,7 @@ public class CodeGenerator {
 
         void visit(DoubleComparisonExpression expression);
 
+
         void visit(BoolOperationExpression expression);
 
         void visit(NotExpression notExpression);
@@ -145,7 +148,7 @@ public class CodeGenerator {
         void visit(Program program);
     }
 
-    static class CodeGeneratorVisitor implements ProgramVisitor {
+    public static class CodeGeneratorVisitor implements ProgramVisitor {
         private final Deque<String> exprStack = new ArrayDeque<>();
         private final List<String> generatedStatements = new ArrayList<>();
         private String generatedCode;
@@ -185,6 +188,7 @@ public class CodeGenerator {
             exprStack.push(expr);
         }
 
+
         @Override
         public void visit(BoolOperationExpression expression) {
             var leftExpr = exprStack.pop();
@@ -211,29 +215,33 @@ public class CodeGenerator {
             var varName = String.format("DIGITAL_OUT_%s", assignment.digitalOutput);
             var statement = String.format("%s = %s;", varName, expr);
             generatedStatements.add(statement);
+            // if assignment.digitalOutput is <actuator>
+            // generate different needed code
         }
 
         @Override
         public void visit(Program program) {
             var varDefines = """
-                    static const uint8_t PORT_A1 = 11;
-                    static const uint8_t PORT_A2 = 12;
-                    static const uint8_t PORT_A3 = 13;
-                    static const uint8_t PORT_D1 = 14;
-                    static const uint8_t PORT_D2 = 15;
-                    static const uint8_t PORT_D3 = 16;""";
+                    static const uint8_t PORT_A0 = A0;
+                    static const uint8_t PORT_A1 = A1;
+                    static const uint8_t PORT_A2 = A2;
+                    static const uint8_t PORT_D9 = 9;
+                    static const uint8_t PORT_D10 = 10;
+                    static const uint8_t PORT_D11 = 11;""";
 
             var setupFuncDef = """            
                     void setup() {
+                        Serial.begin(9600);
+                        pinMode(PORT_A0, INPUT);
                         pinMode(PORT_A1, INPUT);
                         pinMode(PORT_A2, INPUT);
-                        pinMode(PORT_A3, INPUT);
-                        pinMode(PORT_D1, OUTPUT);
-                        pinMode(PORT_D2, OUTPUT);
-                        pinMode(PORT_D3, OUTPUT);
+                        pinMode(PORT_D9, OUTPUT);
+                        pinMode(PORT_D10, OUTPUT);
+                        pinMode(PORT_D11, OUTPUT);
                     }""";
 
             var funcPrologue = """
+                    double ANALOG_IN_A0 = analogRead(PORT_A0);
                     double ANALOG_IN_A1 = analogRead(PORT_A1);
                     double ANALOG_IN_A2 = analogRead(PORT_A2);
                     double ANALOG_IN_A3 = analogRead(PORT_A3);
@@ -244,6 +252,8 @@ public class CodeGenerator {
                     digitalWrite(PORT_D3, DIGITAL_OUT_D3 ? HIGH : LOW);""";
             var sleep = String.format("delay(%d); // FIXME: imprecise", 1000 / program.updateFrequency);
             var statements = String.join("\n", generatedStatements);
+
+
             var funcBody = String.format("%s\n%s\n%s\n%s", funcPrologue, statements, funcEpilogue, sleep);
             var loopFunDef = String.format("void loop() {\n%s}", indent(funcBody, 1));
 
@@ -259,16 +269,37 @@ public class CodeGenerator {
         }
     }
 
-    public static void generateCode(DataStructure dataStructure){
+    public static void generateCode(DataStructure dataStructure) {
 
+    }
 
+    public static DoubleComparisonExpression generateDoubleComparisonExpression(String operator, String analogInput, int inputValue) {
+
+        AnalogInput ainput = AnalogInput.valueOf(analogInput);
+        DoubleLiteral dl = new DoubleLiteral(inputValue);
+        AnalogInputExpression aiex = new AnalogInputExpression(ainput);
+        ComparisonOperator op = null;
+        switch (operator) {
+            case ">":
+                op = ComparisonOperator.GREATER_THAN;
+                break;
+            case "<":
+                op = ComparisonOperator.SMALLER_THAN;
+                break;
+            case "==":
+                op = ComparisonOperator.EQUALS;
+                break;
+
+        }
+
+        return new DoubleComparisonExpression(op, aiex, dl);
     }
 
     public static void main(String[] args) {
 
         var program = new Program(
                 10 /* Hz */,
-                new DigitalOutputStatement(DigitalOutput.D3,
+                new DigitalOutputStatement(DigitalOutput.D9,
                         new BoolOperationExpression(
                                 BoolOperator.XOR,
                                 new DoubleComparisonExpression(

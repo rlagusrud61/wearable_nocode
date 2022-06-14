@@ -79,32 +79,43 @@ public class GUI_sketch extends PApplet {
                     .filter(OutputPin.class::isInstance)
                     .map(OutputPin.class::cast).toList();
 
+
             RootNode root = new RootNode();
             for (OutputPin outputPin : outputPins) {
                 // set Label to the Node (for code generation)
+                CodeGenerator.DigitalOutput digitalOutput = CodeGenerator.DigitalOutput.valueOf(outputPin.pinNum);
                 outputPin.node.setLabel(outputPin.selected);
                 dataStructure.addConnection(root, outputPin.node);
                 ExpressionBlock exp = outputPin.connectedExpression;
                 if (exp != null) {
                     dataStructure.addConnection(outputPin.node, exp.node);
-                    if (outputPin.connectedExpression.connectedInputs != null){
-                        for (InputPin inputPin : exp.connectedInputs ){
+                    if (outputPin.connectedExpression.connectedInputs != null) {
+                        for (InputPin inputPin : exp.connectedInputs) {
                             inputPin.node.setLabel(inputPin.selected);
-                            exp.node.addStatement(exp.operators.get(0).getValue(), inputPin.pinNum, exp.inputValues.get(0).getValue());
+                            CodeGenerator.DoubleComparisonExpression dce = CodeGenerator.generateDoubleComparisonExpression(exp.operators.get(0).getValue(), inputPin.pinNum, exp.inputValues.get(0).getValue());
                             dataStructure.addConnection(exp.node, inputPin.node);
+
+                            CodeGenerator.Program program = new CodeGenerator.Program(
+                                    10 /* hertz */,
+                                    new CodeGenerator.DigitalOutputStatement(digitalOutput, dce
+                                    ));
+
+                            generateCode(program);
 
                         }
                     }
                 }
             }
-
-            generateCode();
             exit();
         }
     }
 
-    public void generateCode() {
-        CodeGenerator.generateCode(dataStructure);
+
+    public void generateCode(CodeGenerator.Program program) {
+       var visitor = new CodeGenerator.CodeGeneratorVisitor();
+       program.accept(visitor);
+       PApplet.println(visitor.getResult());
+
     }
 
     public void mouseDragged() {

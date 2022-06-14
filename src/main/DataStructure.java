@@ -14,9 +14,7 @@ public class DataStructure {
 
     public void init() {
 
-        this.root = new RootNode();
-
-        //initiate all the nodes in the program
+        //initiate all the nodes in the program ; they will be scanned and rendered in the GUI
         nodes = new ArrayList<>();
 
         SensorNode A0 = new SensorNode("A0");
