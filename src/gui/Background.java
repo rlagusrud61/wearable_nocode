@@ -31,6 +31,8 @@ class Background {
                 pin.locked = false;
                 pin.menu.show();
                 expressionNode.hide();
+            } else{
+                pin.menu.hide();
             }
         }
     }
@@ -44,6 +46,7 @@ class Background {
             connection.display();
         }
         expressionNode.display();
+        expressionNode.show();
 //        if (!gui_sketch.menuState) {
 //            expressionNode.edNumBox.show();
 //        }

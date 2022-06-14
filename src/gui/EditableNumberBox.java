@@ -1,9 +1,6 @@
 package gui;
 
-import controlP5.CallbackEvent;
-import controlP5.CallbackListener;
-import controlP5.ControlP5;
-import controlP5.Numberbox;
+import controlP5.*;
 import processing.core.PApplet;
 import processing.core.PVector;
 
@@ -32,11 +29,11 @@ class EditableNumberBox {
     }
 
     public void show() {
-        cp5.show();
+        cp5.getController(pinNum).show();
     }
 
     public void hide() {
-        cp5.hide();
+        cp5.getController(pinNum).hide();
     }
 
 

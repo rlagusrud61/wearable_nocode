@@ -51,17 +51,11 @@ class Choices implements ControlListener {
 
 
     public void show() {
-        ScrollableList pinController = cp5.get(ScrollableList.class, pin.pinNum);
-        if (pinController != null ){
-            pinController.show();
-        }
+        cp5.getController(pin.pinNum).show();
     }
 
     public void hide() {
-        ScrollableList pinController = cp5.get(ScrollableList.class, pin.pinNum);
-        if (pinController != null ){
-            pinController.hide();
-        }
+        cp5.getController(pin.pinNum).hide();
     }
 
     public void controlEvent(ControlEvent theEvent) {

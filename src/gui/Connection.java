@@ -58,9 +58,6 @@ class Connection {
         gui_sketch.pop();
     }
 
-    public void openMenu() {
-        configMenu.setVisible(true);
-    }
 
     @Override
     public String toString() {

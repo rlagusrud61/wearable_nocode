@@ -152,6 +152,7 @@ abstract class Pin {
             }
             gui_sketch.connecting = false;
             locked = false;
+            menu.choices.hide();
         }
     }
 

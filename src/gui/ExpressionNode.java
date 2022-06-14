@@ -70,9 +70,25 @@ class ExpressionNode {
 //        }
 //    }
 
+    public void show(){
+        for (EditableNumberBox expression : inputValues) {
+            expression.show();
+        }
+
+        for (EditableNumberBox expression : outputValues) {
+            expression.show();
+        }
+        for (Choices operator : operators){
+            operator.show();
+        }
+    }
+
     public void hide() {
 
-        for (EditableNumberBox expression : inputValues) {
+        for (EditableNumberBox expression : inputValues ) {
+            expression.hide();
+        }
+        for (EditableNumberBox expression : outputValues ) {
             expression.hide();
         }
         for (Choices operator : operators){
@@ -91,7 +107,7 @@ class ExpressionNode {
             int count = 0;
             for (InputPin connectedInput : connectedInputs) {
                 count++;
-                gui_sketch.text(" Value of " + connectedInput.pinNum + " > ", position.x + 30, position.y + 60 * count);
+                gui_sketch.text(" Value of " + connectedInput.pinNum + " ", position.x + 30, position.y + 60 * count);
             }
         }
 

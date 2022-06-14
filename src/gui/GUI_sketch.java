@@ -119,7 +119,7 @@ public class GUI_sketch extends PApplet {
             pin.mouseRelease();
         }
 
-        PApplet.println(background.connections.toString());
+//        PApplet.println(background.connections.toString());
     }
 
 
