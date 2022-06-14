@@ -2,8 +2,6 @@ package main;
 
 public class ActuatorNode extends IONode{
 
-    Actuators actuators;
-
     ActuatorNode(String port){
         super(port);
     }

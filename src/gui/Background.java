@@ -1,6 +1,5 @@
 package gui;
 
-import processing.core.PApplet;
 import processing.core.PVector;
 
 import java.util.ArrayList;
@@ -12,7 +11,7 @@ class Background {
     ArrayList<Pin> pins;
     ArrayList<Connection> connections;
 
-    ExpressionNode expressionNode;
+    ExpressionBlock expressionBlock;
 
     Background(GUI_sketch gui_sketch) {
         this.gui_sketch = gui_sketch;
@@ -30,7 +29,7 @@ class Background {
                 gui_sketch.connecting = false;
                 pin.locked = false;
                 pin.menu.show();
-                expressionNode.hide();
+                expressionBlock.hide();
             } else{
                 pin.menu.hide();
             }
@@ -45,8 +44,8 @@ class Background {
         for (Connection connection : connections) {
             connection.display();
         }
-        expressionNode.display();
-        expressionNode.show();
+        expressionBlock.display();
+        expressionBlock.show();
 //        if (!gui_sketch.menuState) {
 //            expressionNode.edNumBox.show();
 //        }

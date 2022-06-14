@@ -10,7 +10,7 @@ class Connection {
     private final GUI_sketch gui_sketch;
     Pin pin1;
     Pin pin2;
-    ExpressionNode exp;
+    ExpressionBlock exp;
 
     private PVector position;
     private int size;
@@ -29,17 +29,17 @@ class Connection {
         //openMenu();
     }
 
-    Connection(GUI_sketch gui_sketch, Pin pin, ExpressionNode expressionNode) {
+    Connection(GUI_sketch gui_sketch, Pin pin, ExpressionBlock expressionBlock) {
         this.gui_sketch = gui_sketch;
 
-        PApplet.println("new connection with " + pin.pinNum + " with " + expressionNode);
+        PApplet.println("new connection with " + pin.pinNum + " with " + expressionBlock);
         this.pin1 = pin;
-        this.exp = expressionNode;
+        this.exp = expressionBlock;
 
         if (pin instanceof InputPin) {
-            expressionNode.addInputConnection((InputPin) pin);
+            expressionBlock.addInputConnection((InputPin) pin);
         } else if (pin instanceof OutputPin) {
-            expressionNode.addOutputConnection((OutputPin) pin);
+            expressionBlock.addOutputConnection((OutputPin) pin);
         }
 
     }

@@ -1,16 +1,12 @@
 package gui;
 
-import main.DataStructure;
 import main.IONode;
-import main.Node;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PShape;
 import processing.core.PVector;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 abstract class Pin {
 
@@ -34,7 +30,7 @@ abstract class Pin {
     boolean clickable;
 
     Pin connectedPin;
-    ExpressionNode connectedExpression;
+    ExpressionBlock connectedExpression;
 
     Pin(GUI_sketch gui_sketch, IONode node, PVector position) {
         this.gui_sketch = gui_sketch;
@@ -110,7 +106,7 @@ abstract class Pin {
         }
     }
 
-    public void mouseDrag(ExpressionNode expressionNode, ArrayList<Pin> otherPins, PVector mousePos) {
+    public void mouseDrag(ExpressionBlock expressionBlock, ArrayList<Pin> otherPins, PVector mousePos) {
 
         if (locked) {
             offset = mousePos;
@@ -127,15 +123,15 @@ abstract class Pin {
                 }
             }
 
-            if (this instanceof InputPin && mousePos.x > expressionNode.inputConnectPos.x && mousePos.x < expressionNode.inputConnectPos.x + expressionNode.connectSize &&
-                    mousePos.y > expressionNode.inputConnectPos.y && mousePos.y < expressionNode.inputConnectPos.y + expressionNode.connectSize) {
+            if (this instanceof InputPin && mousePos.x > expressionBlock.inputConnectPos.x && mousePos.x < expressionBlock.inputConnectPos.x + expressionBlock.connectSize &&
+                    mousePos.y > expressionBlock.inputConnectPos.y && mousePos.y < expressionBlock.inputConnectPos.y + expressionBlock.connectSize) {
                 gui_sketch.connecting = true;
-                connectedExpression = expressionNode;
+                connectedExpression = expressionBlock;
 //                PApplet.println("I'm " + this.pinNum + " connecting to " + expressionNode);
-            } else if (this instanceof OutputPin && mousePos.x > expressionNode.outputConnectPos.x && mousePos.x < expressionNode.outputConnectPos.x + expressionNode.connectSize &&
-                    mousePos.y > expressionNode.outputConnectPos.y && mousePos.y < expressionNode.outputConnectPos.y + expressionNode.connectSize) {
+            } else if (this instanceof OutputPin && mousePos.x > expressionBlock.outputConnectPos.x && mousePos.x < expressionBlock.outputConnectPos.x + expressionBlock.connectSize &&
+                    mousePos.y > expressionBlock.outputConnectPos.y && mousePos.y < expressionBlock.outputConnectPos.y + expressionBlock.connectSize) {
                 gui_sketch.connecting = true;
-                connectedExpression = expressionNode;
+                connectedExpression = expressionBlock;
 //                PApplet.println("I'm " + this.pinNum + " connecting to " + expressionNode);
             }
         }

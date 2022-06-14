@@ -1,14 +1,11 @@
 package main;
 
 
-import processing.core.PApplet;
-
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
 
 public class DataStructure {
 
-    public ProgramNode root;
+    public RootNode root;
     public ArrayList<Node> nodes;
 
     public DataStructure() {
@@ -16,6 +13,8 @@ public class DataStructure {
     }
 
     public void init() {
+
+        this.root = new RootNode();
 
         //initiate all the nodes in the program
         nodes = new ArrayList<>();

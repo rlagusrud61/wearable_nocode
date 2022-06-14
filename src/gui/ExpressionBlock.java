@@ -1,15 +1,12 @@
 package gui;
 
-import main.Node;
-import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PShape;
 import processing.core.PVector;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-class ExpressionNode {
+class ExpressionBlock {
 
 
     private final GUI_sketch gui_sketch;
@@ -28,7 +25,7 @@ class ExpressionNode {
     ArrayList<Operator> operators;
 
 
-    ExpressionNode(GUI_sketch gui_sketch, main.ExpressionNode node, PVector position) {
+    ExpressionBlock(GUI_sketch gui_sketch, main.ExpressionNode node, PVector position) {
         this.gui_sketch = gui_sketch;
         this.node = node;
         this.position = position;

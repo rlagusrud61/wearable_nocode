@@ -4,8 +4,8 @@ import main.*;
 import main.codegen.CodeGenerator;
 import processing.core.*;
 
+import java.beans.Expression;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GUI_sketch extends PApplet {
 
@@ -46,7 +46,7 @@ public class GUI_sketch extends PApplet {
                 actuatorNodeCount++;
                 background.pins.add(new OutputPin(this, (ActuatorNode) node, new PVector(720, actuatorNodeCount * 200)));
             } else if (node instanceof main.ExpressionNode) {
-                background.expressionNode = new ExpressionNode(this, (main.ExpressionNode) node, new PVector(300, 150));
+                background.expressionBlock = new ExpressionBlock(this, (main.ExpressionNode) node, new PVector(300, 150));
             }
         }
 
@@ -79,14 +79,20 @@ public class GUI_sketch extends PApplet {
                     .filter(OutputPin.class::isInstance)
                     .map(OutputPin.class::cast).toList();
 
-            ProgramNode root = new ProgramNode();
+            RootNode root = new RootNode();
             for (OutputPin outputPin : outputPins) {
+                // set Label to the Node (for code generation)
+                outputPin.node.setLabel(outputPin.selected);
                 dataStructure.addConnection(root, outputPin.node);
-                if (outputPin.connectedExpression != null) {
-                    dataStructure.addConnection(outputPin.node, outputPin.connectedExpression.node);
+                ExpressionBlock exp = outputPin.connectedExpression;
+                if (exp != null) {
+                    dataStructure.addConnection(outputPin.node, exp.node);
                     if (outputPin.connectedExpression.connectedInputs != null){
-                        for (InputPin inputPin : outputPin.connectedExpression.connectedInputs ){
-                            dataStructure.addConnection(outputPin.connectedExpression.node, inputPin.node);
+                        for (InputPin inputPin : exp.connectedInputs ){
+                            inputPin.node.setLabel(inputPin.selected);
+                            exp.node.addStatement(exp.operators.get(0).getValue(), inputPin.pinNum, exp.inputValues.get(0).getValue());
+                            dataStructure.addConnection(exp.node, inputPin.node);
+
                         }
                     }
                 }
@@ -105,12 +111,8 @@ public class GUI_sketch extends PApplet {
         PVector mousePos = new PVector(mouseX, mouseY);
 
         for (Pin pin : background.pins) {
-            pin.mouseDrag(background.expressionNode, background.pins, mousePos);
+            pin.mouseDrag(background.expressionBlock, background.pins, mousePos);
         }
-
-//        for (ExpressionNode expressionNode : background.expressionNodes) {
-//            expressionNode.mouseDrag(mousePos);
-//        }
     }
 
     public void mouseReleased() {
