@@ -1,9 +1,7 @@
 package gui;
 
-import main.ActuatorNode;
-import main.DataStructure;
-import main.Node;
-import main.SensorNode;
+import main.*;
+import main.codegen.CodeGenerator;
 import processing.core.*;
 
 import java.util.List;
@@ -81,7 +79,26 @@ public class GUI_sketch extends PApplet {
                     .filter(OutputPin.class::isInstance)
                     .map(OutputPin.class::cast).toList();
 
+            ProgramNode root = new ProgramNode();
+            for (OutputPin outputPin : outputPins) {
+                dataStructure.addConnection(root, outputPin.node);
+                if (outputPin.connectedExpression != null) {
+                    dataStructure.addConnection(outputPin.node, outputPin.connectedExpression.node);
+                    if (outputPin.connectedExpression.connectedInputs != null){
+                        for (InputPin inputPin : outputPin.connectedExpression.connectedInputs ){
+                            dataStructure.addConnection(outputPin.connectedExpression.node, inputPin.node);
+                        }
+                    }
+                }
+            }
+
+            generateCode();
+            exit();
         }
+    }
+
+    public void generateCode() {
+        CodeGenerator.generateCode(dataStructure);
     }
 
     public void mouseDragged() {

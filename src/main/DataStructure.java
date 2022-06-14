@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 public class DataStructure {
 
+    public ProgramNode root;
     public ArrayList<Node> nodes;
 
     public DataStructure() {
@@ -36,15 +37,11 @@ public class DataStructure {
         nodes.add(D11);
         nodes.add(exp);
 
+
     }
 
-    public void addConnection(Node n1, Node n2){
-        if(n1 instanceof ActuatorNode){
-            n1.addChild(n2);
-        } else if (n2 instanceof ActuatorNode){
-            n2.addChild(n1);
-        }
-
+    public void addConnection(Node parent, Node child){
+        parent.addChild(child);
     }
 
 }
