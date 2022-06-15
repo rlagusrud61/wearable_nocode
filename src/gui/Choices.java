@@ -20,9 +20,9 @@ class Choices implements ControlListener {
         List sensors = new ArrayList();
 
         if (pin instanceof InputPin) {
-            sensors = Arrays.asList("bending sensor", "touch sensor", "HR sensor", "GSR");
+            sensors = Arrays.asList("BENDING", "TOUCH", "MICROPHONE", "ACCELEROMETER", "DISTANCE", "HR", "GSR");
         } else if (pin instanceof OutputPin) {
-            sensors = Arrays.asList("buzzer", "vibrating motor", "Neopixel");
+            sensors = Arrays.asList("BUZZER", "VIBRATING_MOTOR", "NEOPIXEL", "SERVO");
         }
         if (cp5 == null) {
             cp5 = new ControlP5((PApplet) p);

@@ -88,6 +88,7 @@ public class GUI_sketch extends PApplet {
                 dataStructure.addConnection(root, outputPin.node);
                 ExpressionBlock exp = outputPin.connectedExpression;
                 if (exp != null) {
+                    CodeGenerator.ActuatorType type = CodeGenerator.ActuatorType.valueOf(outputPin.selected);
                     dataStructure.addConnection(outputPin.node, exp.node);
                     if (outputPin.connectedExpression.connectedInputs != null) {
                         for (InputPin inputPin : exp.connectedInputs) {
@@ -101,7 +102,7 @@ public class GUI_sketch extends PApplet {
 
                             CodeGenerator.Program program = new CodeGenerator.Program(
                                     10 /* hertz */,
-                                    new CodeGenerator.DigitalOutputStatement(digitalOutput, dce
+                                    new CodeGenerator.DigitalOutputStatement(digitalOutput, type, dce
                                     ));
 
                             generateCode(program);
@@ -116,9 +117,9 @@ public class GUI_sketch extends PApplet {
 
 
     public void generateCode(CodeGenerator.Program program) {
-       var visitor = new CodeGenerator.CodeGeneratorVisitor();
-       program.accept(visitor);
-       PApplet.println(visitor.getResult());
+        var visitor = new CodeGenerator.CodeGeneratorVisitor();
+        program.accept(visitor);
+        PApplet.println(visitor.getResult());
 
     }
 

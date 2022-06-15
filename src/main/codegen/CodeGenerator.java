@@ -23,6 +23,15 @@ public class CodeGenerator {
         D10,
         D11,
     }
+    public enum SensorType{
+        TOUCH, MICROPHONE, GSR, BENDING, DISTANCE, HR, ACCELEROMETER
+
+    }
+
+    public enum ActuatorType{
+        BUZZER, VIBRATING_MOTOR, NEOPIXEL,SERVO
+    }
+
 
     interface ProgramNode {
         void accept(ProgramVisitor visitor);
@@ -103,13 +112,19 @@ public class CodeGenerator {
 
     }
 
-    public record DigitalOutputStatement(DigitalOutput digitalOutput, BoolExpression expr) implements Statement {
+    public record DigitalOutputStatement(DigitalOutput digitalOutput, ActuatorType type, BoolExpression expr) implements Statement {
         @Override
         public void accept(ProgramVisitor visitor) {
             expr.accept(visitor);
             visitor.visit(this);
         }
     }
+
+//    public record ActuatorTypeExpression() implements  Statement{
+//        @Override
+//        public void accept(ProgramVisitor visitor){
+//        }
+//    }
 
     public static class Program implements ProgramNode {
         public final int updateFrequency;
@@ -139,12 +154,13 @@ public class CodeGenerator {
 
         void visit(DoubleComparisonExpression expression);
 
-
         void visit(BoolOperationExpression expression);
 
         void visit(NotExpression notExpression);
 
         void visit(DigitalOutputStatement assignment);
+
+//        void visit(ActuatorTypeExpression type);
 
         void visit(Program program);
     }
@@ -214,6 +230,7 @@ public class CodeGenerator {
         @Override
         public void visit(DigitalOutputStatement assignment) {
             var expr = exprStack.pop();
+            var type = assignment.type;
             var varName = String.format("DIGITAL_OUT_%s", assignment.digitalOutput);
             var statement = String.format("%s = %s;", varName, expr);
             generatedStatements.add(statement);
@@ -246,7 +263,6 @@ public class CodeGenerator {
                     double ANALOG_IN_A0 = analogRead(PORT_A0);
                     double ANALOG_IN_A1 = analogRead(PORT_A1);
                     double ANALOG_IN_A2 = analogRead(PORT_A2);
-                    double ANALOG_IN_A3 = analogRead(PORT_A3);
                     bool DIGITAL_OUT_D1 = false, DIGITAL_OUT_D2 = false, DIGITAL_OUT_D3 = false;""";
             var funcEpilogue = """
                     digitalWrite(PORT_D3, DIGITAL_OUT_D3);""";
@@ -296,6 +312,7 @@ public class CodeGenerator {
         var program = new Program(
                 10 /* Hz */,
                 new DigitalOutputStatement(DigitalOutput.D9,
+                        ActuatorType.BUZZER,
                         new BoolOperationExpression(
                                 BoolOperator.XOR,
                                 new DoubleComparisonExpression(
