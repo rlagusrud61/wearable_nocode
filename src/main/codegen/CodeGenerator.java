@@ -233,7 +233,6 @@ public class CodeGenerator {
             var type = assignment.type;
             var varName = String.format("DIGITAL_OUT_%s", assignment.digitalOutput);
             var statement = String.format("%s = %s;", varName, expr);
-            generatedStatements.add(type.toString());
             generatedStatements.add(statement);
             // if assignment.digitalOutput is <actuator>
             // generate different needed code
@@ -259,13 +258,17 @@ public class CodeGenerator {
                         pinMode(PORT_D9, OUTPUT);
                         pinMode(PORT_D10, OUTPUT);
                         pinMode(PORT_D11, OUTPUT);
-                    }""";
+                    }
+                    
+                    """;
 
             var funcPrologue = """
                     double ANALOG_IN_A0 = analogRead(PORT_A0);
                     double ANALOG_IN_A1 = analogRead(PORT_A1);
                     double ANALOG_IN_A2 = analogRead(PORT_A2);
-                    bool DIGITAL_OUT_D1 = false, DIGITAL_OUT_D2 = false, DIGITAL_OUT_D3 = false;""";
+                    bool DIGITAL_OUT_D1 = false, DIGITAL_OUT_D2 = false, DIGITAL_OUT_D3 = false;
+                    
+                    """;
             var funcEpilogue = """
                     digitalWrite(PORT_D3, DIGITAL_OUT_D3);""";
             var sleep = String.format("delay(%d); // FIXME: imprecise", 1000 / program.updateFrequency);
@@ -290,8 +293,8 @@ public class CodeGenerator {
             return switch (type) {
                 case BUZZER -> "" ;
                 case VIBRATING_MOTOR -> "";
-                case NEOPIXEL -> String.format("%s\n\n%s", "#include <Adafruit_Neopixel.h>", "Adafruit_Neopixel pixels = Adafruit_Neopixel(16,11,NEO_GRB, NEO_KHZ800);");
-                case SERVO -> String.format("%s\n\n%s", "#include <Servo.h>", "Servo servo");
+                case NEOPIXEL -> String.format("%s\n\n%s\n", "#include <Adafruit_Neopixel.h>", "Adafruit_Neopixel pixels = Adafruit_Neopixel(16,11,NEO_GRB, NEO_KHZ800);");
+                case SERVO -> String.format("%s\n\n%s\n", "#include <Servo.h>", "Servo servo");
             };
         }
     }
