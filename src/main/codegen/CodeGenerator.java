@@ -167,9 +167,9 @@ public class CodeGenerator {
 
     public static class CodeGeneratorVisitor implements ProgramVisitor {
         private final Deque<String> exprStack = new ArrayDeque<>();
+        private final List<String> generatedImports = new ArrayList<>();
         private final List<String> generatedStatements = new ArrayList<>();
         private String generatedCode;
-        // boolean if neopixel
 
         @Override
         public void visit(AnalogInputExpression expression) {
@@ -233,9 +233,11 @@ public class CodeGenerator {
             var type = assignment.type;
             var varName = String.format("DIGITAL_OUT_%s", assignment.digitalOutput);
             var statement = String.format("%s = %s;", varName, expr);
+            generatedStatements.add(type.toString());
             generatedStatements.add(statement);
             // if assignment.digitalOutput is <actuator>
             // generate different needed code
+            generatedImports.add(generateImportStatement(assignment.type));
         }
 
         @Override
@@ -268,12 +270,13 @@ public class CodeGenerator {
                     digitalWrite(PORT_D3, DIGITAL_OUT_D3);""";
             var sleep = String.format("delay(%d); // FIXME: imprecise", 1000 / program.updateFrequency);
             var statements = String.join("\n", generatedStatements);
+            var imports = String.join("\n", generatedImports);
 
 
             var funcBody = String.format("%s\n%s\n%s\n%s", funcPrologue, statements, funcEpilogue, sleep);
             var loopFunDef = String.format("void loop() {\n%s}", indent(funcBody, 1));
 
-            generatedCode = String.format("%s\n%s\n%s", varDefines, setupFuncDef, loopFunDef);
+            generatedCode = String.format("%s\n%s\n%s\n%s", imports, varDefines, setupFuncDef, loopFunDef);
         }
 
         public String getResult() {
@@ -282,6 +285,14 @@ public class CodeGenerator {
 
         private static String indent(String str, int level) {
             return str.indent(level * 4);
+        }
+        private static String generateImportStatement(ActuatorType type){
+            return switch (type) {
+                case BUZZER -> "" ;
+                case VIBRATING_MOTOR -> "";
+                case NEOPIXEL -> String.format("%s\n\n%s", "#include <Adafruit_Neopixel.h>", "Adafruit_Neopixel pixels = Adafruit_Neopixel(16,11,NEO_GRB, NEO_KHZ800);");
+                case SERVO -> String.format("%s\n\n%s", "#include <Servo.h>", "Servo servo");
+            };
         }
     }
 
