@@ -322,7 +322,6 @@ public class CodeGenerator {
     }
 
     public static void main(String[] args) {
-
         var program = new Program(
                 10 /* Hz */,
                 new DigitalOutputStatement(DigitalOutput.D9,

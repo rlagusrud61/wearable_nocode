@@ -3,8 +3,6 @@ package gui;
 import main.*;
 import main.codegen.CodeGenerator;
 import processing.core.*;
-
-import java.beans.Expression;
 import java.util.List;
 
 public class GUI_sketch extends PApplet {
@@ -23,18 +21,7 @@ public class GUI_sketch extends PApplet {
         Operator.setPApplet(this);
         background = new Background(this);
         menuState = false;
-
         dataStructure = new DataStructure();
-
-//        for (int i = 0; i < dataStructure.nodes.size(); i++) {
-//            Node node = dataStructure.nodes.get(i);
-//
-//            if (node instanceof SensorNode) {
-//                background.pins.add(new InputPin(this, node, new PVector(75, i * 100 + 200)));
-//            } else if (node instanceof ActuatorNode) {
-//                background.pins.add(new OutputPin(this, node, new PVector(720, i * 100 + 200)));
-//            }
-//        }
 
         int sensorNodeCount = 0;
         int actuatorNodeCount = 0;
@@ -55,13 +42,14 @@ public class GUI_sketch extends PApplet {
 
     public void draw() {
         background(225);
-
-
         PVector mousePos = new PVector(mouseX, mouseY);
-
-
         background.display();
         background.update(mousePos);
+
+        push();
+        fill(0,255,0);
+        rect(750,0,50,50);
+        pop();
     }
 
     public void mousePressed() {
@@ -104,7 +92,6 @@ public class GUI_sketch extends PApplet {
                                     10 /* hertz */,
                                     new CodeGenerator.DigitalOutputStatement(digitalOutput, type, dce
                                     ));
-
                             generateCode(program);
 
                         }
@@ -120,7 +107,6 @@ public class GUI_sketch extends PApplet {
         var visitor = new CodeGenerator.CodeGeneratorVisitor();
         program.accept(visitor);
         PApplet.println(visitor.getResult());
-
     }
 
     public void mouseDragged() {
@@ -136,8 +122,6 @@ public class GUI_sketch extends PApplet {
         for (Pin pin : background.pins) {
             pin.mouseRelease();
         }
-
-//        PApplet.println(background.connections.toString());
     }
 
 
