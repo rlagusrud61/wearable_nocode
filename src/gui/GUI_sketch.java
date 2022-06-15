@@ -92,7 +92,11 @@ public class GUI_sketch extends PApplet {
                     if (outputPin.connectedExpression.connectedInputs != null) {
                         for (InputPin inputPin : exp.connectedInputs) {
                             inputPin.node.setLabel(inputPin.selected);
-                            CodeGenerator.DoubleComparisonExpression dce = CodeGenerator.generateDoubleComparisonExpression(exp.operators.get(0).getValue(), inputPin.pinNum, exp.inputValues.get(0).getValue());
+                            CodeGenerator.DoubleComparisonExpression dce = CodeGenerator.generateDoubleComparisonExpression(
+                                    exp.operators.get(0).getValue(),
+                                    inputPin.pinNum,
+                                    exp.inputValues.get(0).getValue(),
+                                    exp.outputValues.get(0).getValue());
                             dataStructure.addConnection(exp.node, inputPin.node);
 
                             CodeGenerator.Program program = new CodeGenerator.Program(

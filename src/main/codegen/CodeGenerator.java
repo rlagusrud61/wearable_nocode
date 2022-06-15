@@ -65,10 +65,11 @@ public class CodeGenerator {
     }
 
     public record DoubleComparisonExpression(ComparisonOperator operator, DoubleExpression leftExpr,
-                                             DoubleExpression rightExpr) implements BoolExpression {
+                                             DoubleExpression rightExpr, DoubleExpression outValue) implements BoolExpression {
         @Override
         public void accept(ProgramVisitor visitor) {
             leftExpr.accept(visitor);
+            outValue.accept(visitor);
             rightExpr.accept(visitor);
             visitor.visit(this);
         }
@@ -174,8 +175,9 @@ public class CodeGenerator {
 
         @Override
         public void visit(DoubleComparisonExpression expression) {
-            var leftExpr = exprStack.pop();
             var rightExpr = exprStack.pop();
+            var val = exprStack.pop();
+            var leftExpr = exprStack.pop();
             var operator = switch (expression.operator) {
                 case EQUALS -> "==";
                 case NOT_EQUALS -> "!=";
@@ -184,7 +186,7 @@ public class CodeGenerator {
                 case SMALLER_THAN -> "<";
                 case SMALLER_THAN_EQUALS -> "<=";
             };
-            var expr = String.format("(%s %s %s)", leftExpr, operator, rightExpr);
+            var expr = String.format("(%s %s %s) ? %s : 0", leftExpr, operator, rightExpr, val);
             exprStack.push(expr);
         }
 
@@ -247,9 +249,7 @@ public class CodeGenerator {
                     double ANALOG_IN_A3 = analogRead(PORT_A3);
                     bool DIGITAL_OUT_D1 = false, DIGITAL_OUT_D2 = false, DIGITAL_OUT_D3 = false;""";
             var funcEpilogue = """
-                    digitalWrite(PORT_D1, DIGITAL_OUT_D1 ? HIGH : LOW);
-                    digitalWrite(PORT_D2, DIGITAL_OUT_D2 ? HIGH : LOW);
-                    digitalWrite(PORT_D3, DIGITAL_OUT_D3 ? HIGH : LOW);""";
+                    digitalWrite(PORT_D3, DIGITAL_OUT_D3);""";
             var sleep = String.format("delay(%d); // FIXME: imprecise", 1000 / program.updateFrequency);
             var statements = String.join("\n", generatedStatements);
 
@@ -269,15 +269,11 @@ public class CodeGenerator {
         }
     }
 
-    public static void generateCode(DataStructure dataStructure) {
+    public static DoubleComparisonExpression generateDoubleComparisonExpression(String operator, String analogInput, int inputValue, int outputValue) {
 
-    }
-
-    public static DoubleComparisonExpression generateDoubleComparisonExpression(String operator, String analogInput, int inputValue) {
-
-        AnalogInput ainput = AnalogInput.valueOf(analogInput);
-        DoubleLiteral dl = new DoubleLiteral(inputValue);
-        AnalogInputExpression aiex = new AnalogInputExpression(ainput);
+        DoubleLiteral iVal = new DoubleLiteral(inputValue);
+        DoubleLiteral oVal = new DoubleLiteral(outputValue);
+        AnalogInputExpression aiex = new AnalogInputExpression(AnalogInput.valueOf(analogInput));
         ComparisonOperator op = null;
         switch (operator) {
             case ">":
@@ -292,7 +288,7 @@ public class CodeGenerator {
 
         }
 
-        return new DoubleComparisonExpression(op, aiex, dl);
+        return new DoubleComparisonExpression(op, aiex, iVal, oVal);
     }
 
     public static void main(String[] args) {
@@ -305,13 +301,15 @@ public class CodeGenerator {
                                 new DoubleComparisonExpression(
                                         ComparisonOperator.GREATER_THAN_EQUALS,
                                         new AnalogInputExpression(AnalogInput.A1),
-                                        new DoubleLiteral(1.5)
+                                        new DoubleLiteral(1.5),
+                                        new DoubleLiteral(40)
                                 ),
                                 new NotExpression(
                                         new DoubleComparisonExpression(
                                                 ComparisonOperator.SMALLER_THAN,
                                                 new DoubleLiteral(2),
-                                                new AnalogInputExpression(AnalogInput.A2)
+                                                new AnalogInputExpression(AnalogInput.A2),
+                                                new DoubleLiteral(40)
                                         )
                                 )
                         )
