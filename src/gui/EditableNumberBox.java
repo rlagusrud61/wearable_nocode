@@ -12,6 +12,20 @@ class EditableNumberBox {
     PVector pos;
     ControlP5 cp5;
 
+    EditableNumberBox(PVector pos){
+
+        this.pos = pos;
+
+        if (cp5 == null) {
+            cp5 = new ControlP5(p);
+        }
+        Numberbox n = cp5.addNumberbox("delay")
+                .setSize(30, 20)
+                .setPosition(pos.x, pos.y)
+                .setValue(0)
+                .setDecimalPrecision(0);
+        makeEditable(n);
+    }
     EditableNumberBox(String pinNum, PVector pos) {
 
         this.pos = pos;
@@ -27,8 +41,10 @@ class EditableNumberBox {
                 .setDecimalPrecision(0);
         makeEditable(n);
     }
-
     public int getValue(){
+        if (pinNum == null){
+            return (int) cp5.getController("delay").getValue();
+        }
         return (int) cp5.getController(pinNum).getValue();
     }
     public void show() {

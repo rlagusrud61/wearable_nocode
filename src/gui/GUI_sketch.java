@@ -3,10 +3,10 @@ package gui;
 import main.*;
 import main.codegen.CodeGenerator;
 import processing.core.*;
+
 import java.util.List;
 
 public class GUI_sketch extends PApplet {
-
 
     DataStructure dataStructure;
     Background background;
@@ -47,8 +47,8 @@ public class GUI_sketch extends PApplet {
         background.update(mousePos);
 
         push();
-        fill(0,255,0);
-        rect(750,0,50,50);
+        fill(0, 255, 0);
+        rect(750, 0, 50, 50);
         pop();
     }
 
@@ -68,15 +68,22 @@ public class GUI_sketch extends PApplet {
                     .map(OutputPin.class::cast).toList();
 
 
-            RootNode root = new RootNode();
             for (OutputPin outputPin : outputPins) {
                 // set Label to the Node (for code generation)
+
+
                 CodeGenerator.DigitalOutput digitalOutput = CodeGenerator.DigitalOutput.valueOf(outputPin.pinNum);
-                outputPin.node.setLabel(outputPin.selected);
-                dataStructure.addConnection(root, outputPin.node);
+
                 ExpressionBlock exp = outputPin.connectedExpression;
+
                 if (exp != null) {
-                    CodeGenerator.ActuatorType type = CodeGenerator.ActuatorType.valueOf(outputPin.selected);
+                    var delay  = new CodeGenerator.DoubleLiteral(outputPin.connectedExpression.delay.getValue());
+                    CodeGenerator.ActuatorType type = null;
+                    try {
+                        type = CodeGenerator.ActuatorType.valueOf(outputPin.selected);
+                    } catch (NullPointerException e) {
+                        println("Name is null!");
+                    }
                     dataStructure.addConnection(outputPin.node, exp.node);
                     if (outputPin.connectedExpression.connectedInputs != null) {
                         for (InputPin inputPin : exp.connectedInputs) {
@@ -85,12 +92,13 @@ public class GUI_sketch extends PApplet {
                                     exp.operators.get(0).getValue(),
                                     inputPin.pinNum,
                                     exp.inputValues.get(0).getValue(),
-                                    exp.outputValues.get(0).getValue());
+                                    exp.outputValues.get(0).getValue(),
+                                    exp.elses.get(0).getValue());
                             dataStructure.addConnection(exp.node, inputPin.node);
 
                             CodeGenerator.Program program = new CodeGenerator.Program(
                                     10 /* hertz */,
-                                    new CodeGenerator.DigitalOutputStatement(digitalOutput, type, dce
+                                    new CodeGenerator.DigitalOutputStatement(digitalOutput, type, delay, dce
                                     ));
                             generateCode(program);
 

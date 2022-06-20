@@ -36,11 +36,7 @@ class Connection {
         this.pin1 = pin;
         this.exp = expressionBlock;
 
-        if (pin instanceof InputPin) {
-            expressionBlock.addInputConnection((InputPin) pin);
-        } else if (pin instanceof OutputPin) {
-            expressionBlock.addOutputConnection((OutputPin) pin);
-        }
+        expressionBlock.addConnection(pin);
 
     }
 

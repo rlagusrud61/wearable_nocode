@@ -1,10 +1,6 @@
 package main.codegen;
 
 
-import main.*;
-import processing.core.PApplet;
-
-import javax.swing.*;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -23,13 +19,14 @@ public class CodeGenerator {
         D10,
         D11,
     }
-    public enum SensorType{
+
+    public enum SensorType {
         TOUCH, MICROPHONE, GSR, BENDING, DISTANCE, HR, ACCELEROMETER
 
     }
 
-    public enum ActuatorType{
-        BUZZER, VIBRATING_MOTOR, NEOPIXEL,SERVO
+    public enum ActuatorType {
+        BUZZER, VIBRATING_MOTOR, NEOPIXEL, SERVO
     }
 
 
@@ -50,7 +47,7 @@ public class CodeGenerator {
         }
     }
 
-    record DoubleLiteral(double value) implements DoubleExpression {
+    public record DoubleLiteral(double value) implements DoubleExpression {
         @Override
         public void accept(ProgramVisitor visitor) {
             visitor.visit(this);
@@ -74,11 +71,14 @@ public class CodeGenerator {
     }
 
     public record DoubleComparisonExpression(ComparisonOperator operator, DoubleExpression leftExpr,
-                                             DoubleExpression rightExpr, DoubleExpression outValue) implements BoolExpression {
+                                             DoubleExpression rightExpr,
+                                             DoubleExpression ifValue,
+                                             DoubleExpression elseValue) implements BoolExpression {
         @Override
         public void accept(ProgramVisitor visitor) {
             leftExpr.accept(visitor);
-            outValue.accept(visitor);
+            ifValue.accept(visitor);
+            elseValue.accept(visitor);
             rightExpr.accept(visitor);
             visitor.visit(this);
         }
@@ -112,7 +112,9 @@ public class CodeGenerator {
 
     }
 
-    public record DigitalOutputStatement(DigitalOutput digitalOutput, ActuatorType type, BoolExpression expr) implements Statement {
+    public record DigitalOutputStatement(DigitalOutput digitalOutput, ActuatorType type,
+                                         DoubleLiteral delay,
+                                         BoolExpression expr) implements Statement {
         @Override
         public void accept(ProgramVisitor visitor) {
             expr.accept(visitor);
@@ -166,7 +168,14 @@ public class CodeGenerator {
     }
 
     public static class CodeGeneratorVisitor implements ProgramVisitor {
+        /***
+         *
+         NodeVisitor -- declares operation for each node class.
+         *
+         */
+
         private final Deque<String> exprStack = new ArrayDeque<>();
+        private String generatedDelay = null;
         private final List<String> generatedImports = new ArrayList<>();
         private final List<String> generatedStatements = new ArrayList<>();
         private String generatedCode;
@@ -192,7 +201,8 @@ public class CodeGenerator {
         @Override
         public void visit(DoubleComparisonExpression expression) {
             var rightExpr = exprStack.pop();
-            var val = exprStack.pop();
+            var elseVal = exprStack.pop();
+            var ifVal = exprStack.pop();
             var leftExpr = exprStack.pop();
             var operator = switch (expression.operator) {
                 case EQUALS -> "==";
@@ -202,7 +212,7 @@ public class CodeGenerator {
                 case SMALLER_THAN -> "<";
                 case SMALLER_THAN_EQUALS -> "<=";
             };
-            var expr = String.format("(%s %s %s) ? %s : 0", leftExpr, operator, rightExpr, val);
+            var expr = String.format("(%s %s %s) ? %s : %s", leftExpr, operator, rightExpr, ifVal, elseVal);
             exprStack.push(expr);
         }
 
@@ -231,8 +241,10 @@ public class CodeGenerator {
         public void visit(DigitalOutputStatement assignment) {
             var expr = exprStack.pop();
             var type = assignment.type;
+            var delay = assignment.delay.value;
             var varName = String.format("DIGITAL_OUT_%s", assignment.digitalOutput);
             var statement = String.format("%s = %s;", varName, expr);
+            generatedDelay = String.format("delay(%f)", delay);
             generatedStatements.add(statement);
             // if assignment.digitalOutput is <actuator>
             // generate different needed code
@@ -259,7 +271,7 @@ public class CodeGenerator {
                         pinMode(PORT_D10, OUTPUT);
                         pinMode(PORT_D11, OUTPUT);
                     }
-                    
+                                        
                     """;
 
             var funcPrologue = """
@@ -267,19 +279,17 @@ public class CodeGenerator {
                     double ANALOG_IN_A1 = analogRead(PORT_A1);
                     double ANALOG_IN_A2 = analogRead(PORT_A2);
                     bool DIGITAL_OUT_D1 = false, DIGITAL_OUT_D2 = false, DIGITAL_OUT_D3 = false;
-                    
+                                        
                     """;
             var funcEpilogue = """
-                    digitalWrite(PORT_D3, DIGITAL_OUT_D3);""";
-            var sleep = String.format("delay(%d); // FIXME: imprecise", 1000 / program.updateFrequency);
+                    digitalWrite(PORT_D9, DIGITAL_OUT_D9);""";
             var statements = String.join("\n", generatedStatements);
             var imports = String.join("\n", generatedImports);
 
-
-            var funcBody = String.format("%s\n%s\n%s\n%s", funcPrologue, statements, funcEpilogue, sleep);
+            var funcBody = String.format("%s\n%s\n%s\n%s", funcPrologue, statements, funcEpilogue, generatedDelay);
             var loopFunDef = String.format("void loop() {\n%s}", indent(funcBody, 1));
 
-            generatedCode = String.format("%s\n%s\n%s\n%s", imports, varDefines, setupFuncDef, loopFunDef);
+            generatedCode = String.format("%s\n%s\n%s\n%s\n", imports, varDefines, setupFuncDef, loopFunDef);
         }
 
         public String getResult() {
@@ -289,20 +299,23 @@ public class CodeGenerator {
         private static String indent(String str, int level) {
             return str.indent(level * 4);
         }
-        private static String generateImportStatement(ActuatorType type){
+
+        private static String generateImportStatement(ActuatorType type) {
             return switch (type) {
-                case BUZZER -> "" ;
+                case BUZZER -> "";
                 case VIBRATING_MOTOR -> "";
-                case NEOPIXEL -> String.format("%s\n\n%s\n", "#include <Adafruit_Neopixel.h>", "Adafruit_Neopixel pixels = Adafruit_Neopixel(16,11,NEO_GRB, NEO_KHZ800);");
+                case NEOPIXEL ->
+                        String.format("%s\n\n%s\n", "#include <Adafruit_Neopixel.h>", "Adafruit_Neopixel pixels = Adafruit_Neopixel(16,11,NEO_GRB, NEO_KHZ800);");
                 case SERVO -> String.format("%s\n\n%s\n", "#include <Servo.h>", "Servo servo");
             };
         }
     }
 
-    public static DoubleComparisonExpression generateDoubleComparisonExpression(String operator, String analogInput, int inputValue, int outputValue) {
+    public static DoubleComparisonExpression generateDoubleComparisonExpression(String operator, String analogInput, int inputValue, int ifValue, int elseValue) {
 
         DoubleLiteral iVal = new DoubleLiteral(inputValue);
-        DoubleLiteral oVal = new DoubleLiteral(outputValue);
+        DoubleLiteral ifVal = new DoubleLiteral(ifValue);
+        DoubleLiteral elseVal = new DoubleLiteral(elseValue);
         AnalogInputExpression aiex = new AnalogInputExpression(AnalogInput.valueOf(analogInput));
         ComparisonOperator op = null;
         switch (operator) {
@@ -318,7 +331,7 @@ public class CodeGenerator {
 
         }
 
-        return new DoubleComparisonExpression(op, aiex, iVal, oVal);
+        return new DoubleComparisonExpression(op, aiex, iVal, ifVal, elseVal);
     }
 
     public static void main(String[] args) {
@@ -326,20 +339,23 @@ public class CodeGenerator {
                 10 /* Hz */,
                 new DigitalOutputStatement(DigitalOutput.D9,
                         ActuatorType.BUZZER,
+                        new DoubleLiteral(100), /* delay */
                         new BoolOperationExpression(
                                 BoolOperator.XOR,
                                 new DoubleComparisonExpression(
                                         ComparisonOperator.GREATER_THAN_EQUALS,
                                         new AnalogInputExpression(AnalogInput.A1),
                                         new DoubleLiteral(1.5),
-                                        new DoubleLiteral(40)
+                                        new DoubleLiteral(40),
+                                        new DoubleLiteral(20)
                                 ),
                                 new NotExpression(
                                         new DoubleComparisonExpression(
                                                 ComparisonOperator.SMALLER_THAN,
                                                 new DoubleLiteral(2),
                                                 new AnalogInputExpression(AnalogInput.A2),
-                                                new DoubleLiteral(40)
+                                                new DoubleLiteral(40),
+                                                new DoubleLiteral(20)
                                         )
                                 )
                         )

@@ -123,13 +123,13 @@ abstract class Pin {
                 }
             }
 
-            if (this instanceof InputPin && mousePos.x > expressionBlock.inputConnectPos.x && mousePos.x < expressionBlock.inputConnectPos.x + expressionBlock.connectSize &&
-                    mousePos.y > expressionBlock.inputConnectPos.y && mousePos.y < expressionBlock.inputConnectPos.y + expressionBlock.connectSize) {
+            if (this instanceof InputPin && mousePos.x > expressionBlock.inputConnectPos.x && mousePos.x < expressionBlock.inputConnectPos.x + expressionBlock.CONNECTSIZE &&
+                    mousePos.y > expressionBlock.inputConnectPos.y && mousePos.y < expressionBlock.inputConnectPos.y + expressionBlock.CONNECTSIZE) {
                 gui_sketch.connecting = true;
                 connectedExpression = expressionBlock;
 //                PApplet.println("I'm " + this.pinNum + " connecting to " + expressionNode);
-            } else if (this instanceof OutputPin && mousePos.x > expressionBlock.outputConnectPos.x && mousePos.x < expressionBlock.outputConnectPos.x + expressionBlock.connectSize &&
-                    mousePos.y > expressionBlock.outputConnectPos.y && mousePos.y < expressionBlock.outputConnectPos.y + expressionBlock.connectSize) {
+            } else if (this instanceof OutputPin && mousePos.x > expressionBlock.outputConnectPos.x && mousePos.x < expressionBlock.outputConnectPos.x + expressionBlock.CONNECTSIZE &&
+                    mousePos.y > expressionBlock.outputConnectPos.y && mousePos.y < expressionBlock.outputConnectPos.y + expressionBlock.CONNECTSIZE) {
                 gui_sketch.connecting = true;
                 connectedExpression = expressionBlock;
 //                PApplet.println("I'm " + this.pinNum + " connecting to " + expressionNode);

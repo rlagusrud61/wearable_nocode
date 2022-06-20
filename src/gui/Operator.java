@@ -35,7 +35,7 @@ public class Operator extends Choices implements CallbackListener {
                                                              public void controlEvent(CallbackEvent theEvent) {
                                                                  switch (theEvent.getAction()) {
                                                                      case (ControlP5.ACTION_RELEASE):
-                                                                         PApplet.println(theEvent.getController().getLabel());
+                                                                         PApplet.println(pin.pinNum + " " + theEvent.getController().getLabel());
                                                                  }
                                                              }
                                                          }
