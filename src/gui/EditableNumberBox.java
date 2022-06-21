@@ -25,6 +25,16 @@ class EditableNumberBox {
                 .setValue(0)
                 .setDecimalPrecision(0);
         makeEditable(n);
+
+        cp5.getController("delay").addCallback(new CallbackListener() {
+                                                  public void controlEvent(CallbackEvent theEvent) {
+                                                      switch (theEvent.getAction()) {
+                                                          case (ControlP5.ACTION_RELEASE):
+                                                              PApplet.println( "delay:  " + theEvent.getController().getValue());
+                                                      }
+                                                  }
+                                              }
+        );
     }
     EditableNumberBox(String pinNum, PVector pos) {
 
@@ -40,6 +50,16 @@ class EditableNumberBox {
                 .setValue(0)
                 .setDecimalPrecision(0);
         makeEditable(n);
+
+        cp5.getController(pinNum).addCallback(new CallbackListener() {
+                                                             public void controlEvent(CallbackEvent theEvent) {
+                                                                 switch (theEvent.getAction()) {
+                                                                     case (ControlP5.ACTION_RELEASE):
+                                                                         PApplet.println(pinNum + " " + theEvent.getController().getValue());
+                                                                 }
+                                                             }
+                                                         }
+        );
     }
     public int getValue(){
         if (pinNum == null){
