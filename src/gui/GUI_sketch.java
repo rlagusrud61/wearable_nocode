@@ -4,6 +4,7 @@ import main.*;
 import main.codegen.CodeGenerator;
 import processing.core.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GUI_sketch extends PApplet {
@@ -25,6 +26,7 @@ public class GUI_sketch extends PApplet {
 
         int sensorNodeCount = 0;
         int actuatorNodeCount = 0;
+        int expressionNodeCount = 0;
         for (Node node : dataStructure.nodes) {
             if (node instanceof SensorNode) {
                 sensorNodeCount++;
@@ -33,6 +35,7 @@ public class GUI_sketch extends PApplet {
                 actuatorNodeCount++;
                 background.pins.add(new OutputPin(this, (ActuatorNode) node, new PVector(720, actuatorNodeCount * 200)));
             } else if (node instanceof main.ExpressionNode) {
+                // should be able to handle more expressionblocks
                 background.expressionBlock = new ExpressionBlock(this, (main.ExpressionNode) node, new PVector(300, 150));
             }
         }
@@ -67,47 +70,45 @@ public class GUI_sketch extends PApplet {
                     .filter(OutputPin.class::isInstance)
                     .map(OutputPin.class::cast).toList();
 
+            ArrayList<CodeGenerator.Statement> statements = new ArrayList<>();
 
             for (OutputPin outputPin : outputPins) {
                 // set Label to the Node (for code generation)
-
 
                 CodeGenerator.DigitalOutput digitalOutput = CodeGenerator.DigitalOutput.valueOf(outputPin.pinNum);
 
                 ExpressionBlock exp = outputPin.connectedExpression;
 
-                if (exp != null) {
-                    var delay  = new CodeGenerator.DoubleLiteral(outputPin.connectedExpression.delay.getValue());
-                    CodeGenerator.ActuatorType type = null;
-                    try {
-                        type = CodeGenerator.ActuatorType.valueOf(outputPin.selected);
-                    } catch (NullPointerException e) {
-                        println("Name is null!");
-                    }
-                    dataStructure.addConnection(outputPin.node, exp.node);
-                    if (outputPin.connectedExpression.connectedInputs != null) {
-                        for (InputPin inputPin : exp.connectedInputs) {
-                            inputPin.node.setLabel(inputPin.selected);
+                if (exp != null) { // if there is connected expression
+
+                    var delay = new CodeGenerator.DoubleLiteral(exp.delay.getValue()); // get delay value
+                    CodeGenerator.ActuatorType type = CodeGenerator.ActuatorType.valueOf(outputPin.selected);
+
+                    if (exp.connectedInputs != null) {
+                        for (int i = 0; i < exp.connectedInputs.size() ; i ++) {
+
                             CodeGenerator.DoubleComparisonExpression dce = CodeGenerator.generateDoubleComparisonExpression(
-                                    exp.operators.get(0).getValue(),
-                                    inputPin.pinNum,
-                                    exp.inputValues.get(0).getValue(),
-                                    exp.outputValues.get(0).getValue(),
-                                    exp.elses.get(0).getValue());
-                            dataStructure.addConnection(exp.node, inputPin.node);
+                                    exp.operators.get(i).getValue(), /* Comparison operator*/
+                                    exp.connectedInputs.get(i).pinNum, /* AnalogInputStatement */
+                                    exp.connectedInputs.get(i).selected, /* SensorType */
+                                    exp.inputValues.get(i).getValue(), /* input value to be compared*/
+                                    exp.outputValues.get(i).getValue(), /* if true */
+                                    exp.elses.get(i).getValue()); /* if false */
 
-                            CodeGenerator.Program program = new CodeGenerator.Program(
-                                    10 /* hertz */,
-                                    new CodeGenerator.DigitalOutputStatement(digitalOutput, type, delay, dce
-                                    ));
-                            generateCode(program);
-
+                            /* Add a new statement */
+                            statements.add(new CodeGenerator.DigitalOutputStatement(digitalOutput, type, delay, dce));
                         }
                     }
                 }
             }
+
+            CodeGenerator.Program program = new CodeGenerator.Program(
+                    10, statements.toArray(new CodeGenerator.Statement[0])
+            );
+            generateCode(program);
             exit();
         }
+
     }
 
 
