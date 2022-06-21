@@ -54,7 +54,7 @@ public class CodeGenerator {
         }
     }
 
-    record AnalogInputExpression(AnalogInput analogInput) implements DoubleExpression {
+    record AnalogInputExpression(AnalogInput analogInput, SensorType sensorType) implements DoubleExpression {
         @Override
         public void accept(ProgramVisitor visitor) {
             visitor.visit(this);
@@ -178,11 +178,28 @@ public class CodeGenerator {
         private String generatedDelay = null;
         private final List<String> generatedImports = new ArrayList<>();
         private final List<String> generatedStatements = new ArrayList<>();
+        private final List<String> generatedPrologue = new ArrayList<>();
+        private final List<String> generatedSetup = new ArrayList<>();
         private String generatedCode;
 
         @Override
         public void visit(AnalogInputExpression expression) {
             var varName = String.format("ANALOG_IN_%s", expression.analogInput);
+
+            switch (expression.sensorType) {
+                case TOUCH:
+                case MICROPHONE:
+                case HR:
+                    generatedPrologue.add(String.format("double ANALOG_IN_%s = digitalRead(PORT_%s);",expression.analogInput, expression.analogInput));
+                    break;
+
+                case BENDING:
+                case GSR:
+                case DISTANCE:
+                case ACCELEROMETER:
+                    generatedPrologue.add(String.format("double ANALOG_IN_%s = analogRead(PORT_%s);",expression.analogInput, expression.analogInput));
+
+            };
             exprStack.push(varName);
         }
 
@@ -240,7 +257,7 @@ public class CodeGenerator {
         @Override
         public void visit(DigitalOutputStatement assignment) {
             var expr = exprStack.pop();
-            var type = assignment.type;
+//            var type = assignment.type;
             var delay = assignment.delay.value;
             var varName = String.format("DIGITAL_OUT_%s", assignment.digitalOutput);
             var statement = String.format("%s = %s;", varName, expr);
@@ -274,13 +291,14 @@ public class CodeGenerator {
                                         
                     """;
 
-            var funcPrologue = """
-                    double ANALOG_IN_A0 = analogRead(PORT_A0);
-                    double ANALOG_IN_A1 = analogRead(PORT_A1);
-                    double ANALOG_IN_A2 = analogRead(PORT_A2);
-                    bool DIGITAL_OUT_D1 = false, DIGITAL_OUT_D2 = false, DIGITAL_OUT_D3 = false;
-                                        
-                    """;
+//            var funcPrologue = """
+//                    double ANALOG_IN_A0 = analogRead(PORT_A0);
+//                    double ANALOG_IN_A1 = analogRead(PORT_A1);
+//                    double ANALOG_IN_A2 = analogRead(PORT_A2);
+//                    bool DIGITAL_OUT_D1 = false, DIGITAL_OUT_D2 = false, DIGITAL_OUT_D3 = false;
+//
+//                    """;
+            var funcPrologue = String.join("\n" , generatedPrologue);
             var funcEpilogue = """
                     digitalWrite(PORT_D9, DIGITAL_OUT_D9);""";
             var statements = String.join("\n", generatedStatements);
@@ -311,12 +329,13 @@ public class CodeGenerator {
         }
     }
 
-    public static DoubleComparisonExpression generateDoubleComparisonExpression(String operator, String analogInput, int inputValue, int ifValue, int elseValue) {
+    public static DoubleComparisonExpression generateDoubleComparisonExpression(String operator, String analogInput, String sensorType, int inputValue, int ifValue, int elseValue) {
 
-        DoubleLiteral iVal = new DoubleLiteral(inputValue);
-        DoubleLiteral ifVal = new DoubleLiteral(ifValue);
-        DoubleLiteral elseVal = new DoubleLiteral(elseValue);
-        AnalogInputExpression aiex = new AnalogInputExpression(AnalogInput.valueOf(analogInput));
+        DoubleLiteral inputVal = new DoubleLiteral(inputValue);
+        DoubleLiteral trueVal = new DoubleLiteral(ifValue);
+        DoubleLiteral falseVal = new DoubleLiteral(elseValue);
+        SensorType type = SensorType.valueOf(sensorType);
+        AnalogInputExpression analogInputExpression = new AnalogInputExpression(AnalogInput.valueOf(analogInput), type);
         ComparisonOperator op = null;
         switch (operator) {
             case ">":
@@ -331,40 +350,60 @@ public class CodeGenerator {
 
         }
 
-        return new DoubleComparisonExpression(op, aiex, iVal, ifVal, elseVal);
+        return new DoubleComparisonExpression(op, analogInputExpression, inputVal, trueVal, falseVal);
     }
 
-    public static void main(String[] args) {
-        var program = new Program(
-                10 /* Hz */,
-                new DigitalOutputStatement(DigitalOutput.D9,
-                        ActuatorType.BUZZER,
-                        new DoubleLiteral(100), /* delay */
-                        new BoolOperationExpression(
-                                BoolOperator.XOR,
-                                new DoubleComparisonExpression(
-                                        ComparisonOperator.GREATER_THAN_EQUALS,
-                                        new AnalogInputExpression(AnalogInput.A1),
-                                        new DoubleLiteral(1.5),
-                                        new DoubleLiteral(40),
-                                        new DoubleLiteral(20)
-                                ),
-                                new NotExpression(
-                                        new DoubleComparisonExpression(
-                                                ComparisonOperator.SMALLER_THAN,
-                                                new DoubleLiteral(2),
-                                                new AnalogInputExpression(AnalogInput.A2),
-                                                new DoubleLiteral(40),
-                                                new DoubleLiteral(20)
-                                        )
-                                )
-                        )
-                )
-        );
-
-        var visitor = new CodeGeneratorVisitor();
-        program.accept(visitor);
-
-        System.out.println(visitor.getResult());
-    }
+//    public static void main(String[] args) {
+//        var program = new Program(
+//                10 /* Hz */,
+//                new DigitalOutputStatement(DigitalOutput.D9,
+//                        ActuatorType.BUZZER,
+//                        new DoubleLiteral(100), /* delay */
+//                        new BoolOperationExpression(
+//                                BoolOperator.XOR,
+//                                new DoubleComparisonExpression(
+//                                        ComparisonOperator.GREATER_THAN_EQUALS,
+//                                        new AnalogInputExpression(AnalogInput.A1),
+//                                        new DoubleLiteral(1.5),
+//                                        new DoubleLiteral(40),
+//                                        new DoubleLiteral(20)
+//                                ),
+//                                new NotExpression(
+//                                        new DoubleComparisonExpression(
+//                                                ComparisonOperator.SMALLER_THAN,
+//                                                new DoubleLiteral(2),
+//                                                new AnalogInputExpression(AnalogInput.A2),
+//                                                new DoubleLiteral(40),
+//                                                new DoubleLiteral(20)
+//                                        )
+//                                )
+//                        )
+//                ), new DigitalOutputStatement(
+//                DigitalOutput.D10,
+//                ActuatorType.NEOPIXEL,
+//                new DoubleLiteral(100),
+//                new BoolOperationExpression(
+//                        BoolOperator.AND,
+//                        new DoubleComparisonExpression(
+//                                ComparisonOperator.GREATER_THAN,
+//                                new DoubleLiteral(3),
+//                                new AnalogInputExpression(AnalogInput.A0),
+//                                new DoubleLiteral(100),
+//                                new DoubleLiteral(40)
+//                        ), new DoubleComparisonExpression(
+//                        ComparisonOperator.SMALLER_THAN,
+//                        new DoubleLiteral(2101),
+//                        new AnalogInputExpression(AnalogInput.A2),
+//                        new DoubleLiteral(50),
+//                        new DoubleLiteral(20)
+//                )
+//                )
+//        )
+//        );
+//
+//        var visitor = new CodeGeneratorVisitor();
+//        program.accept(visitor);
+//
+//        System.out.println(visitor.getResult());
+//    }
 }
