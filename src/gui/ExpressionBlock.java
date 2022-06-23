@@ -13,7 +13,7 @@ class ExpressionBlock {
     PVector position;
     PVector inputConnectPos, outputConnectPos;
 
-    final static int SIZE = 100;
+    final static int SIZE = 200;
     final static int CONNECTSIZE = 20;
     PShape shape, expressionBox, inputConnect, outputConnect;
 
@@ -41,7 +41,7 @@ class ExpressionBlock {
         this.inputConnectPos = new PVector(position.x - 20, position.y + SIZE / 2);
         this.outputConnectPos = new PVector(position.x + SIZE, position.y + SIZE / 2);
 
-        this.delay = new EditableNumberBox(new PVector(position.x + 80, position.y + SIZE * 2 - 30));
+        this.delay = new EditableNumberBox(new PVector(position.x + 80, position.y + SIZE - 30));
 
 
         setShapes();
@@ -50,7 +50,7 @@ class ExpressionBlock {
     public void setShapes() {
 
         shape = new PShape(PConstants.GROUP);
-        expressionBox = gui_sketch.createShape(PConstants.RECT, position.x, position.y, SIZE, SIZE * 2);
+        expressionBox = gui_sketch.createShape(PConstants.RECT, position.x, position.y, SIZE, SIZE );
         inputConnect = gui_sketch.createShape(PConstants.RECT, inputConnectPos.x, inputConnectPos.y, CONNECTSIZE, CONNECTSIZE);
         outputConnect = gui_sketch.createShape(PConstants.RECT, outputConnectPos.x, outputConnectPos.y, CONNECTSIZE, CONNECTSIZE);
 
@@ -81,6 +81,11 @@ class ExpressionBlock {
         for (Choices operator : operators) {
             operator.show();
         }
+
+        for (EditableNumberBox elseValues : elses){
+            elseValues.show();
+        }
+        delay.show();
     }
 
     public void hide() {
@@ -94,6 +99,10 @@ class ExpressionBlock {
         for (Choices operator : operators) {
             operator.hide();
         }
+        for (EditableNumberBox elseValues : elses){
+            elseValues.hide();
+        }
+        delay.hide();
     }
 
     public void display() {
@@ -123,7 +132,7 @@ class ExpressionBlock {
             }
         }
 
-        gui_sketch.text("DELAY ", position.x + 10, position.y + SIZE * 2 - 20);
+        gui_sketch.text("DELAY ", position.x + 10, position.y + SIZE  - 20);
 
         gui_sketch.pop();
     }

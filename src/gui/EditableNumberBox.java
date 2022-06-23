@@ -4,6 +4,8 @@ import controlP5.*;
 import processing.core.PApplet;
 import processing.core.PVector;
 
+import java.util.Objects;
+
 class EditableNumberBox {
 // Editable Numberbox for ControlP5
 
@@ -12,7 +14,7 @@ class EditableNumberBox {
     PVector pos;
     ControlP5 cp5;
 
-    EditableNumberBox(PVector pos){
+    EditableNumberBox(PVector pos) {
 
         this.pos = pos;
 
@@ -27,15 +29,16 @@ class EditableNumberBox {
         makeEditable(n);
 
         cp5.getController("delay").addCallback(new CallbackListener() {
-                                                  public void controlEvent(CallbackEvent theEvent) {
-                                                      switch (theEvent.getAction()) {
-                                                          case (ControlP5.ACTION_RELEASE):
-                                                              PApplet.println( "delay:  " + theEvent.getController().getValue());
-                                                      }
-                                                  }
-                                              }
+                                                   public void controlEvent(CallbackEvent theEvent) {
+                                                       switch (theEvent.getAction()) {
+                                                           case (ControlP5.ACTION_RELEASE):
+                                                               PApplet.println("delay:  " + theEvent.getController().getValue());
+                                                       }
+                                                   }
+                                               }
         );
     }
+
     EditableNumberBox(String pinNum, PVector pos) {
 
         this.pos = pos;
@@ -52,27 +55,27 @@ class EditableNumberBox {
         makeEditable(n);
 
         cp5.getController(pinNum).addCallback(new CallbackListener() {
-                                                             public void controlEvent(CallbackEvent theEvent) {
-                                                                 switch (theEvent.getAction()) {
-                                                                     case (ControlP5.ACTION_RELEASE):
-                                                                         PApplet.println(pinNum + " " + theEvent.getController().getValue());
-                                                                 }
-                                                             }
-                                                         }
+                                                  public void controlEvent(CallbackEvent theEvent) {
+                                                      switch (theEvent.getAction()) {
+                                                          case (ControlP5.ACTION_RELEASE):
+                                                              PApplet.println(pinNum + " " + theEvent.getController().getValue());
+                                                      }
+                                                  }
+                                              }
         );
     }
-    public int getValue(){
-        if (pinNum == null){
-            return (int) cp5.getController("delay").getValue();
-        }
-        return (int) cp5.getController(pinNum).getValue();
+
+    public int getValue() {
+        return (int) cp5.getController(Objects.requireNonNullElse(pinNum, "delay")).getValue();
     }
+
     public void show() {
-        cp5.getController(pinNum).show();
+        cp5.getController(Objects.requireNonNullElse(pinNum, "delay")).show();
     }
 
     public void hide() {
-        cp5.getController(pinNum).hide();
+
+        cp5.getController(Objects.requireNonNullElse(pinNum, "delay")).hide();
     }
 
 

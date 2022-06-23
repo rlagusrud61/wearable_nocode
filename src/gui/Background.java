@@ -31,7 +31,7 @@ class Background {
         OutputPin D10 = new OutputPin(gui_sketch, "D10", new PVector(720, 400));
         OutputPin D11 = new OutputPin(gui_sketch, "D11", new PVector(720, 600));
 
-        expressionBlock.add(new ExpressionBlock(gui_sketch, new PVector(300, 150)));
+        expressionBlock.add(new ExpressionBlock(gui_sketch, new PVector(300, 50)));
         expressionBlock.add(new ExpressionBlock(gui_sketch, new PVector(300, 400)));
 
 
@@ -74,9 +74,6 @@ class Background {
             block.display();
             block.show();
         }
-//        if (!gui_sketch.menuState) {
-//            expressionNode.edNumBox.show();
-//        }
     }
 
     public void hide() {
