@@ -22,7 +22,6 @@ abstract class Pin {
     boolean locked; // for dragging
     Menu menu;
 
-    IONode node;
 
     PVector connectionPos;
     boolean mouseOverConnection;
@@ -32,11 +31,10 @@ abstract class Pin {
     Pin connectedPin;
     ExpressionBlock connectedExpression;
 
-    Pin(GUI_sketch gui_sketch, IONode node, PVector position) {
+    Pin(GUI_sketch gui_sketch,String pinNum,  PVector position) {
         this.gui_sketch = gui_sketch;
-        this.node = node;
         this.clickable = true;
-        this.pinNum = node.port;
+        this.pinNum = pinNum;
         this.position = position.copy();
         this.size = 150;
         this.menu = new Menu(gui_sketch, this);

@@ -4,6 +4,7 @@ import main.*;
 import main.codegen.CodeGenerator;
 import processing.core.*;
 
+import java.beans.Expression;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,7 +13,6 @@ import java.util.List;
 
 public class GUI_sketch extends PApplet {
 
-    DataStructure dataStructure;
     Background background;
 
     boolean menuState;
@@ -25,23 +25,7 @@ public class GUI_sketch extends PApplet {
         Operator.setPApplet(this);
         background = new Background(this);
         menuState = false;
-        dataStructure = new DataStructure();
 
-        int sensorNodeCount = 0;
-        int actuatorNodeCount = 0;
-        int expressionNodeCount = 0;
-        for (Node node : dataStructure.nodes) {
-            if (node instanceof SensorNode) {
-                sensorNodeCount++;
-                background.pins.add(new InputPin(this, (SensorNode) node, new PVector(75, sensorNodeCount * 200)));
-            } else if (node instanceof ActuatorNode) {
-                actuatorNodeCount++;
-                background.pins.add(new OutputPin(this, (ActuatorNode) node, new PVector(720, actuatorNodeCount * 200)));
-            } else if (node instanceof main.ExpressionNode) {
-                // should be able to handle more expressionblocks
-                background.expressionBlock = new ExpressionBlock(this, (main.ExpressionNode) node, new PVector(300, 150));
-            }
-        }
 
     }
 
@@ -76,7 +60,7 @@ public class GUI_sketch extends PApplet {
 
             ArrayList<CodeGenerator.Statement> statements = new ArrayList<>();
 
-            for (OutputPin outputPin : outputPins) {
+            for (OutputPin outputPin: outputPins) {
                 // set Label to the Node (for code generation)
 
                 CodeGenerator.DigitalOutput digitalOutput = CodeGenerator.DigitalOutput.valueOf(outputPin.pinNum);
@@ -91,13 +75,26 @@ public class GUI_sketch extends PApplet {
                     if (exp.connectedInputs != null) {
                         for (int i = 0; i < exp.connectedInputs.size(); i++) {
 
+                            // Get the true and false values of the corresponding DigitalOutput
+                            EditableNumberBox val = exp.outputValues
+                                    .stream()
+                                    .filter(value -> value.pinNum.equals(outputPin.pinNum))
+                                    .findFirst()
+                                    .orElseThrow(()-> new RuntimeException("No matching values!"));
+
+                            EditableNumberBox elseVal = exp.elses
+                                    .stream()
+                                    .filter(value -> value.pinNum.equals(outputPin.pinNum))
+                                    .findFirst()
+                                    .orElseThrow(() -> new RuntimeException("No matching else values!"));
+
                             CodeGenerator.DoubleComparisonExpression dce = CodeGenerator.generateDoubleComparisonExpression(
                                     exp.operators.get(i).getValue(), /* Comparison operator*/
                                     exp.connectedInputs.get(i).pinNum, /* AnalogInputStatement */
                                     exp.connectedInputs.get(i).selected, /* SensorType */
                                     exp.inputValues.get(i).getValue(), /* input value to be compared*/
-                                    exp.outputValues.get(i).getValue(), /* if true */
-                                    exp.elses.get(i).getValue()); /* if false */
+                                    val.getValue(), /* if true */
+                                    elseVal.getValue()); /* if false */
 
                             /* Add a new statement */
                             statements.add(new CodeGenerator.DigitalOutputStatement(digitalOutput, type, delay, dce));
@@ -122,7 +119,7 @@ public class GUI_sketch extends PApplet {
             if (file.createNewFile()) {
                 PApplet.println("File created: " + file.getName());
             } else {
-                PApplet.println("File already exists.");
+                PApplet.println("File " + fileName + " already exists. Overwriting...");
             }
         } catch (IOException e) {
             PApplet.println("An error occurred");
@@ -139,7 +136,7 @@ public class GUI_sketch extends PApplet {
 
         FileWriter writer = null;
         try {
-            writer = new FileWriter(file.getCanonicalPath());
+            writer = new FileWriter(file.getCanonicalPath(),false);
             writer.write(visitor.getResult());
             writer.close();
             System.out.println("Successfully wrote to the file.");
@@ -153,7 +150,9 @@ public class GUI_sketch extends PApplet {
         PVector mousePos = new PVector(mouseX, mouseY);
 
         for (Pin pin : background.pins) {
-            pin.mouseDrag(background.expressionBlock, background.pins, mousePos);
+            for (ExpressionBlock block : background.expressionBlock){
+                pin.mouseDrag(block, background.pins, mousePos);
+            }
         }
     }
 

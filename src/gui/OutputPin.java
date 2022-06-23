@@ -7,9 +7,9 @@ import processing.core.PVector;
 
 class OutputPin extends Pin {
 
-//    private final GUI_sketch gui_sketch;
-    OutputPin(GUI_sketch gui_sketch, IONode node, PVector position) {
-        super(gui_sketch, node, position);
+    //    private final GUI_sketch gui_sketch;
+    OutputPin(GUI_sketch gui_sketch, String pinNum, PVector position) {
+        super(gui_sketch, pinNum, position);
 //        this.gui_sketch = gui_sketch;
 
         this.connectionPos = new PVector(position.x - 80, position.y + (size / 4));

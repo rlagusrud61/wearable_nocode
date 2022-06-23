@@ -13,10 +13,9 @@ class ExpressionBlock {
     PVector position;
     PVector inputConnectPos, outputConnectPos;
 
-    final static int SIZE = 200;
+    final static int SIZE = 100;
     final static int CONNECTSIZE = 20;
     PShape shape, expressionBox, inputConnect, outputConnect;
-    main.ExpressionNode node;
 
     ArrayList<InputPin> connectedInputs;
     ArrayList<OutputPin> connectedOutputs;
@@ -29,9 +28,8 @@ class ExpressionBlock {
 
 
 
-    ExpressionBlock(GUI_sketch gui_sketch, main.ExpressionNode node, PVector position) {
+    ExpressionBlock(GUI_sketch gui_sketch, PVector position) {
         this.gui_sketch = gui_sketch;
-        this.node = node;
         this.position = position;
         this.connectedInputs = new ArrayList<>();
         this.connectedOutputs = new ArrayList<>();
