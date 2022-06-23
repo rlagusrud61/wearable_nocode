@@ -4,6 +4,9 @@ import main.*;
 import main.codegen.CodeGenerator;
 import processing.core.*;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +68,7 @@ public class GUI_sketch extends PApplet {
         PVector mousePos = new PVector(mouseX, mouseY);
         if (mousePos.x > 750 && mousePos.y < 50) {
             PApplet.println("DONE");
+            File file = createFile("generatedCode");
 
             List<OutputPin> outputPins = background.pins.stream()
                     .filter(OutputPin.class::isInstance)
@@ -85,7 +89,7 @@ public class GUI_sketch extends PApplet {
                     CodeGenerator.ActuatorType type = CodeGenerator.ActuatorType.valueOf(outputPin.selected);
 
                     if (exp.connectedInputs != null) {
-                        for (int i = 0; i < exp.connectedInputs.size() ; i ++) {
+                        for (int i = 0; i < exp.connectedInputs.size(); i++) {
 
                             CodeGenerator.DoubleComparisonExpression dce = CodeGenerator.generateDoubleComparisonExpression(
                                     exp.operators.get(i).getValue(), /* Comparison operator*/
@@ -105,17 +109,44 @@ public class GUI_sketch extends PApplet {
             CodeGenerator.Program program = new CodeGenerator.Program(
                     10, statements.toArray(new CodeGenerator.Statement[0])
             );
-            generateCode(program);
+            generateCode(file, program);
             exit();
         }
 
     }
 
+    public File createFile(String fileName) {
+        File file = null;
+        try {
+            file = new File(fileName + ".ino");
+            if (file.createNewFile()) {
+                PApplet.println("File created: " + file.getName());
+            } else {
+                PApplet.println("File already exists.");
+            }
+        } catch (IOException e) {
+            PApplet.println("An error occurred");
+            e.printStackTrace();
+        }
+        return file;
+    }
 
-    public void generateCode(CodeGenerator.Program program) {
+
+    public void generateCode(File file, CodeGenerator.Program program) {
+
         var visitor = new CodeGenerator.CodeGeneratorVisitor();
         program.accept(visitor);
-        PApplet.println(visitor.getResult());
+
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(file.getCanonicalPath());
+            writer.write(visitor.getResult());
+            writer.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
     }
 
     public void mouseDragged() {
