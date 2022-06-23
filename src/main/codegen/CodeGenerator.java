@@ -179,6 +179,7 @@ public class CodeGenerator {
         private final List<String> generatedImports = new ArrayList<>();
         private final List<String> generatedStatements = new ArrayList<>();
         private final List<String> generatedPrologue = new ArrayList<>();
+        private final List<String> generatedEpilogue = new ArrayList<>();
         private final List<String> generatedSetup = new ArrayList<>();
         private String generatedCode;
 
@@ -190,16 +191,17 @@ public class CodeGenerator {
                 case TOUCH:
                 case MICROPHONE:
                 case HR:
-                    generatedPrologue.add(String.format("double ANALOG_IN_%s = digitalRead(PORT_%s);",expression.analogInput, expression.analogInput));
+                    generatedPrologue.add(String.format("double ANALOG_IN_%s = digitalRead(PORT_%s);", expression.analogInput, expression.analogInput));
                     break;
 
                 case BENDING:
                 case GSR:
                 case DISTANCE:
                 case ACCELEROMETER:
-                    generatedPrologue.add(String.format("double ANALOG_IN_%s = analogRead(PORT_%s);",expression.analogInput, expression.analogInput));
+                    generatedPrologue.add(String.format("double ANALOG_IN_%s = analogRead(PORT_%s);", expression.analogInput, expression.analogInput));
 
-            };
+            }
+            ;
             exprStack.push(varName);
         }
 
@@ -261,7 +263,7 @@ public class CodeGenerator {
             var delay = assignment.delay.value;
             var varName = String.format("DIGITAL_OUT_%s", assignment.digitalOutput);
             var statement = String.format("%s = %s;", varName, expr);
-            generatedDelay = String.format("delay(%f)", delay);
+            generatedDelay = String.format("delay(%f);", delay);
             generatedStatements.add(statement);
             // if assignment.digitalOutput is <actuator>
             // generate different needed code
@@ -270,6 +272,20 @@ public class CodeGenerator {
 
         @Override
         public void visit(Program program) {
+            var arduino = """
+                    //////////////////////////////////////////////////////////////////////
+                    //
+                    //  _______________________
+                    // |GND|GND|GND|GND|GND|GND|
+                    // |VCC|VCC|VCC|VCC|VCC|VCC|
+                    // |A2_|A1_|A0_|D9_|D10|D11|
+                    // |                       |
+                    // |_______________________|
+                    //          | USB |\s
+                    //          |_____|
+                    //
+                    ///////////////////////////////////////////////////////////////////////
+                    """;
             var varDefines = """
                     static const uint8_t PORT_A0 = A0;
                     static const uint8_t PORT_A1 = A1;
@@ -287,27 +303,29 @@ public class CodeGenerator {
                         pinMode(PORT_D9, OUTPUT);
                         pinMode(PORT_D10, OUTPUT);
                         pinMode(PORT_D11, OUTPUT);
+                        
                     }
                                         
                     """;
 
-//            var funcPrologue = """
-//                    double ANALOG_IN_A0 = analogRead(PORT_A0);
-//                    double ANALOG_IN_A1 = analogRead(PORT_A1);
-//                    double ANALOG_IN_A2 = analogRead(PORT_A2);
-//                    bool DIGITAL_OUT_D1 = false, DIGITAL_OUT_D2 = false, DIGITAL_OUT_D3 = false;
-//
-//                    """;
-            var funcPrologue = String.join("\n" , generatedPrologue);
+
+            var funcPrologue = """
+                    \n // Prologue \ndouble DIGITAL_OUT_D9 , DIGITAL_OUT_D10 , DIGITAL_OUT_D11 = false;\n //Generated \n"""
+                    .concat(String.join("\n", generatedPrologue));
+
             var funcEpilogue = """
-                    digitalWrite(PORT_D9, DIGITAL_OUT_D9);""";
+                    \n // Epilogue \n
+                    analogWrite(PORT_D9, DIGITAL_OUT_D9);
+                    analogWrite(PORT_D10,DIGITAL_OUT_D10);
+                    analogWrite(PORT_D11, DIGITAL_OUT_D11);
+                    """;
             var statements = String.join("\n", generatedStatements);
             var imports = String.join("\n", generatedImports);
 
             var funcBody = String.format("%s\n%s\n%s\n%s", funcPrologue, statements, funcEpilogue, generatedDelay);
             var loopFunDef = String.format("void loop() {\n%s}", indent(funcBody, 1));
 
-            generatedCode = String.format("%s\n%s\n%s\n%s\n", imports, varDefines, setupFuncDef, loopFunDef);
+            generatedCode = String.format("%s\n%s\n%s\n%s\n%s\n", arduino, imports, varDefines, setupFuncDef, loopFunDef);
         }
 
         public String getResult() {
