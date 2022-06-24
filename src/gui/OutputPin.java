@@ -1,8 +1,5 @@
 package gui;
 
-import main.IONode;
-import main.Node;
-import processing.core.PApplet;
 import processing.core.PVector;
 
 class OutputPin extends Pin {

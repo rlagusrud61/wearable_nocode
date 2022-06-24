@@ -1,7 +1,5 @@
 package gui;
 
-import main.IONode;
-import main.Node;
 import processing.core.PVector;
 
 class InputPin extends Pin {

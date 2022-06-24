@@ -1,6 +1,5 @@
 package gui;
 
-import main.IONode;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PShape;

@@ -1,10 +1,8 @@
 package gui;
 
-import main.ActuatorNode;
-import main.ExpressionNode;
+import main.codegen.CodeGenerator;
 import processing.core.PVector;
 
-import java.beans.Expression;
 import java.util.ArrayList;
 
 class Background {
@@ -24,12 +22,12 @@ class Background {
         expressionBlock = new ArrayList<>();
 
 
-        InputPin A0 = new InputPin(gui_sketch, "A0", new PVector(75, 200));
-        InputPin A1 = new InputPin(gui_sketch, "A1", new PVector(75, 400));
-        InputPin A2 = new InputPin(gui_sketch, "A2", new PVector(75, 600));
-        OutputPin D9 = new OutputPin(gui_sketch, "D9", new PVector(720, 200));
-        OutputPin D10 = new OutputPin(gui_sketch, "D10", new PVector(720, 400));
-        OutputPin D11 = new OutputPin(gui_sketch, "D11", new PVector(720, 600));
+        InputPin A0 = new InputPin(gui_sketch, CodeGenerator.AnalogInput.A0.toString(), new PVector(75, 200));
+        InputPin A1 = new InputPin(gui_sketch, CodeGenerator.AnalogInput.A1.toString(), new PVector(75, 400));
+        InputPin A2 = new InputPin(gui_sketch, CodeGenerator.AnalogInput.A2.toString(), new PVector(75, 600));
+        OutputPin D9 = new OutputPin(gui_sketch, CodeGenerator.DigitalOutput.D9.toString(), new PVector(720, 200));
+        OutputPin D10 = new OutputPin(gui_sketch, CodeGenerator.DigitalOutput.D10.toString(), new PVector(720, 400));
+        OutputPin D11 = new OutputPin(gui_sketch, CodeGenerator.DigitalOutput.D11.toString(), new PVector(720, 600));
 
         expressionBlock.add(new ExpressionBlock(gui_sketch, new PVector(300, 50)));
         expressionBlock.add(new ExpressionBlock(gui_sketch, new PVector(300, 400)));
