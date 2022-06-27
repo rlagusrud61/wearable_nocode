@@ -37,7 +37,7 @@ class Menu {
         gui_sketch.pop();
         gui_sketch.push();
         gui_sketch.fill(0);
-        gui_sketch.text("Menu for pin " + pin.pinNum, 200, 250);
+        gui_sketch.text("Configuration menu for pin " + pin.pinNum, 200, 250);
         gui_sketch.pop();
 
 
