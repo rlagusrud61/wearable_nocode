@@ -1,6 +1,7 @@
 package gui;
 
 import controlP5.*;
+import main.codegen.CodeGenerator;
 import processing.core.PApplet;
 
 import java.util.ArrayList;
@@ -17,12 +18,14 @@ class Choices implements ControlListener {
 
         this.pin = pin;
 
-        List sensors = new ArrayList();
+        List sensors = new ArrayList<>();
 
         if (pin instanceof InputPin) {
-            sensors = Arrays.asList("BENDING", "TOUCH", "MICROPHONE", "ACCELEROMETER", "DISTANCE", "HR", "GSR");
+//            Convert SensorType enums as List
+            sensors = Arrays.stream(Arrays.stream(CodeGenerator.SensorType.values()).map(Enum::name).toArray(String[]::new)).toList();
         } else if (pin instanceof OutputPin) {
-            sensors = Arrays.asList("BUZZER", "VIBRATING_MOTOR", "NEOPIXEL", "SERVO");
+//            Convert ActuatorType enums as List
+            sensors = Arrays.stream(Arrays.stream(CodeGenerator.ActuatorType.values()).map(Enum::name).toArray(String[]::new)).toList();
         }
         if (cp5 == null) {
             cp5 = new ControlP5((PApplet) p);

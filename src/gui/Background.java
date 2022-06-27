@@ -3,7 +3,9 @@ package gui;
 import main.codegen.CodeGenerator;
 import processing.core.PVector;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 class Background {
 
@@ -21,24 +23,20 @@ class Background {
         connections = new ArrayList<Connection>();
         expressionBlock = new ArrayList<>();
 
+//        Initialize inputs according to enums in CodeGenerator class
+        var inputs = Arrays.stream(Arrays.stream(CodeGenerator.AnalogInput.values()).map(Enum::name).toArray(String[]::new)).toList();
+        for (int i = 0; i < inputs.size(); i++) {
+            pins.add(new InputPin(gui_sketch, inputs.get(i), new PVector(75, (i + 1) * 200)));
+        }
 
-        InputPin A0 = new InputPin(gui_sketch, CodeGenerator.AnalogInput.A0.toString(), new PVector(75, 200));
-        InputPin A1 = new InputPin(gui_sketch, CodeGenerator.AnalogInput.A1.toString(), new PVector(75, 400));
-        InputPin A2 = new InputPin(gui_sketch, CodeGenerator.AnalogInput.A2.toString(), new PVector(75, 600));
-        OutputPin D9 = new OutputPin(gui_sketch, CodeGenerator.DigitalOutput.D9.toString(), new PVector(720, 200));
-        OutputPin D10 = new OutputPin(gui_sketch, CodeGenerator.DigitalOutput.D10.toString(), new PVector(720, 400));
-        OutputPin D11 = new OutputPin(gui_sketch, CodeGenerator.DigitalOutput.D11.toString(), new PVector(720, 600));
+//        Initialize inputs according to enums in CodeGenerator class
+        var outputs = Arrays.stream(Arrays.stream(CodeGenerator.DigitalOutput.values()).map(Enum::name).toArray(String[]::new)).toList();
+        for (int i = 0; i < outputs.size(); i++) {
+            pins.add(new OutputPin(gui_sketch, outputs.get(i), new PVector(720, (i + 1) * 200)));
+        }
 
         expressionBlock.add(new ExpressionBlock(gui_sketch, new PVector(300, 50)));
         expressionBlock.add(new ExpressionBlock(gui_sketch, new PVector(300, 400)));
-
-
-        pins.add(A0);
-        pins.add(A1);
-        pins.add(A2);
-        pins.add(D9);
-        pins.add(D10);
-        pins.add(D11);
 
     }
 
