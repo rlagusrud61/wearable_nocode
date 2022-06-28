@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class GUI_sketch extends PApplet {
@@ -58,12 +59,25 @@ public class GUI_sketch extends PApplet {
 
             ArrayList<CodeGenerator.Statement> statements = new ArrayList<>();
 
-            for (OutputPin outputPin: outputPins) {
+            for (OutputPin outputPin : outputPins) {
                 // set Label to the Node (for code generation)
 
                 CodeGenerator.DigitalOutput digitalOutput = CodeGenerator.DigitalOutput.valueOf(outputPin.pinNum);
 
+
                 ExpressionBlock exp = outputPin.connectedExpression;
+                Pin inputPin = outputPin.connectedPin;
+
+                if (inputPin != null) {
+
+                    CodeGenerator.ActuatorType type = CodeGenerator.ActuatorType.valueOf(outputPin.selected);
+                    CodeGenerator.AnalogInputExpression expression = new CodeGenerator.AnalogInputExpression(
+                            CodeGenerator.AnalogInput.valueOf(inputPin.pinNum), CodeGenerator.SensorType.valueOf(inputPin.selected));
+                    CodeGenerator.SimpleExpression simpleExpression = new CodeGenerator.SimpleExpression(expression);
+
+                    statements.add(new CodeGenerator.DigitalOutputStatement(digitalOutput, type, new CodeGenerator.DoubleLiteral(100), simpleExpression));
+                }
+
 
                 if (exp != null) { // if there is connected expression
 
@@ -72,19 +86,19 @@ public class GUI_sketch extends PApplet {
 
                     if (exp.connectedInputs != null) {
                         for (int i = 0; i < exp.connectedInputs.size(); i++) {
-
                             // Get the true and false values of the corresponding DigitalOutput
                             EditableNumberBox val = exp.outputValues
                                     .stream()
                                     .filter(value -> value.pinNum.equals(outputPin.pinNum))
                                     .findFirst()
-                                    .orElseThrow(()-> new RuntimeException("No matching values!"));
+                                    .orElseThrow(() -> new RuntimeException("No matching values!"));
 
                             EditableNumberBox elseVal = exp.elses
                                     .stream()
                                     .filter(value -> value.pinNum.equals(outputPin.pinNum))
                                     .findFirst()
                                     .orElseThrow(() -> new RuntimeException("No matching else values!"));
+
 
                             CodeGenerator.DoubleComparisonExpression dce = CodeGenerator.generateDoubleComparisonExpression(
                                     exp.operators.get(i).getValue(), /* Comparison operator*/
@@ -134,7 +148,7 @@ public class GUI_sketch extends PApplet {
 
         FileWriter writer = null;
         try {
-            writer = new FileWriter(file.getCanonicalPath(),false);
+            writer = new FileWriter(file.getCanonicalPath(), false);
             writer.write(visitor.getResult());
             writer.close();
             System.out.println("Successfully wrote to the file.");
@@ -148,7 +162,7 @@ public class GUI_sketch extends PApplet {
         PVector mousePos = new PVector(mouseX, mouseY);
 
         for (Pin pin : background.pins) {
-            for (ExpressionBlock block : background.expressionBlock){
+            for (ExpressionBlock block : background.expressionBlock) {
                 pin.mouseDrag(block, background.pins, mousePos);
             }
         }

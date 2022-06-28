@@ -40,7 +40,7 @@ public class CodeGenerator {
     interface DoubleExpression extends ProgramNode {
     }
 
-    record BoolLiteral(boolean value) implements BoolExpression {
+    public record BoolLiteral(boolean value) implements BoolExpression {
         @Override
         public void accept(ProgramVisitor visitor) {
             visitor.visit(this);
@@ -54,7 +54,7 @@ public class CodeGenerator {
         }
     }
 
-    record AnalogInputExpression(AnalogInput analogInput, SensorType sensorType) implements DoubleExpression {
+    public record AnalogInputExpression(AnalogInput analogInput, SensorType sensorType) implements DoubleExpression {
         @Override
         public void accept(ProgramVisitor visitor) {
             visitor.visit(this);
@@ -70,7 +70,7 @@ public class CodeGenerator {
         SMALLER_THAN_EQUALS,
     }
 
-    public record SimpleExpression(DoubleExpression expr) implements BoolExpression{
+    public record SimpleExpression(AnalogInputExpression expr) implements BoolExpression{
         @Override
         public void accept(ProgramVisitor visitor){
             expr.accept(visitor);
@@ -227,7 +227,9 @@ public class CodeGenerator {
 
         @Override
         public void visit(SimpleExpression expression){
-//            var expr = String.format("(%s, ")
+            var express = exprStack.pop();
+            var value = String.format("%s, %s" , express, expression);
+            exprStack.push(value);
         }
         @Override
         public void visit(DoubleComparisonExpression expression) {
@@ -279,7 +281,7 @@ public class CodeGenerator {
             generatedStatements.add(statement);
             // if assignment.digitalOutput is <actuator>
             // generate different needed code
-            generateImportStatement(assignment.type, expr);
+            generateImportStatement(assignment, expr);
 
 
         }
@@ -351,18 +353,19 @@ public class CodeGenerator {
             return str.indent(level * 4);
         }
 
-        private void generateImportStatement(ActuatorType type, String expr) {
-            switch (type) {
+        private void generateImportStatement(DigitalOutputStatement assignment, String expr) {
+            switch (assignment.type) {
                 case BUZZER:
                 case VIBRATING_MOTOR:
                     generatedImports.add("");
                     break;
                 case NEOPIXEL:
-                    generatedImports.add(String.format("%s\n\n%s\n", "#include <Adafruit_Neopixel.h>", "Adafruit_Neopixel pixels = Adafruit_Neopixel(16,11,NEO_GRB, NEO_KHZ800);"));
+                    generatedImports.add(String.format("%s\n\n", "#include <Adafruit_Neopixel.h>"));
+                    generatedSetup.add("Adafruit_Neopixel pixels = Adafruit_Neopixel(16," + assignment.digitalOutput + ",NEO_GRB, NEO_KHZ800);");
                     break;
                 case SERVO:
                     generatedImports.add(String.format("%s\n\n%s\n", "#include <Servo.h>", "Servo servo;"));
-                    generatedSetup.add(String.format("servo.attach(%s)\n", expr));
+                    generatedSetup.add(String.format("servo.attach(%s)\n", assignment.digitalOutput));
                     generatedEpilogue.add(String.format("servo.write(map(%s, 0, 1023, 0, 180));", expr));
                     break;
 
