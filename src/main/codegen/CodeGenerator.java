@@ -70,6 +70,14 @@ public class CodeGenerator {
         SMALLER_THAN_EQUALS,
     }
 
+    public record SimpleExpression(DoubleExpression expr) implements BoolExpression{
+        @Override
+        public void accept(ProgramVisitor visitor){
+            expr.accept(visitor);
+            visitor.visit(this);
+        }
+    }
+
     public record DoubleComparisonExpression(ComparisonOperator operator, DoubleExpression leftExpr,
                                              DoubleExpression rightExpr,
                                              DoubleExpression ifValue,
@@ -156,13 +164,13 @@ public class CodeGenerator {
 
         void visit(DoubleComparisonExpression expression);
 
+        void visit(SimpleExpression expression);
+
         void visit(BoolOperationExpression expression);
 
         void visit(NotExpression notExpression);
 
         void visit(DigitalOutputStatement assignment);
-
-//        void visit(ActuatorTypeExpression type);
 
         void visit(Program program);
     }
@@ -218,6 +226,10 @@ public class CodeGenerator {
         }
 
         @Override
+        public void visit(SimpleExpression expression){
+//            var expr = String.format("(%s, ")
+        }
+        @Override
         public void visit(DoubleComparisonExpression expression) {
             var rightExpr = exprStack.pop();
             var elseVal = exprStack.pop();
@@ -267,7 +279,9 @@ public class CodeGenerator {
             generatedStatements.add(statement);
             // if assignment.digitalOutput is <actuator>
             // generate different needed code
-            generatedImports.add(generateImportStatement(assignment.type));
+            generateImportStatement(assignment.type, expr);
+
+
         }
 
         @Override
@@ -321,8 +335,9 @@ public class CodeGenerator {
                     """;
             var statements = String.join("\n", generatedStatements);
             var imports = String.join("\n", generatedImports);
+            var epilogue = funcEpilogue.concat(String.join("\n", generatedEpilogue));
 
-            var funcBody = String.format("%s\n%s\n%s\n%s", funcPrologue, statements, funcEpilogue, generatedDelay);
+            var funcBody = String.format("%s\n%s\n%s\n%s", funcPrologue, statements, epilogue, generatedDelay);
             var loopFunDef = String.format("void loop() {\n%s}", indent(funcBody, 1));
 
             generatedCode = String.format("%s\n%s\n%s\n%s\n%s\n", arduino, imports, varDefines, setupFuncDef, loopFunDef);
@@ -336,15 +351,25 @@ public class CodeGenerator {
             return str.indent(level * 4);
         }
 
-        private static String generateImportStatement(ActuatorType type) {
-            return switch (type) {
-                case BUZZER -> "";
-                case VIBRATING_MOTOR -> "";
-                case NEOPIXEL ->
-                        String.format("%s\n\n%s\n", "#include <Adafruit_Neopixel.h>", "Adafruit_Neopixel pixels = Adafruit_Neopixel(16,11,NEO_GRB, NEO_KHZ800);");
-                case SERVO -> String.format("%s\n\n%s\n", "#include <Servo.h>", "Servo servo");
-            };
+        private void generateImportStatement(ActuatorType type, String expr) {
+            switch (type) {
+                case BUZZER:
+                case VIBRATING_MOTOR:
+                    generatedImports.add("");
+                    break;
+                case NEOPIXEL:
+                    generatedImports.add(String.format("%s\n\n%s\n", "#include <Adafruit_Neopixel.h>", "Adafruit_Neopixel pixels = Adafruit_Neopixel(16,11,NEO_GRB, NEO_KHZ800);"));
+                    break;
+                case SERVO:
+                    generatedImports.add(String.format("%s\n\n%s\n", "#include <Servo.h>", "Servo servo;"));
+                    generatedSetup.add(String.format("servo.attach(%s)\n", expr));
+                    generatedEpilogue.add(String.format("servo.write(map(%s, 0, 1023, 0, 180));", expr));
+                    break;
+
+            }
+            ;
         }
+
     }
 
     public static DoubleComparisonExpression generateDoubleComparisonExpression(String operator, String analogInput, String sensorType, int inputValue, int ifValue, int elseValue) {
@@ -371,57 +396,57 @@ public class CodeGenerator {
         return new DoubleComparisonExpression(op, analogInputExpression, inputVal, trueVal, falseVal);
     }
 
-//    public static void main(String[] args) {
-//        var program = new Program(
-//                10 /* Hz */,
-//                new DigitalOutputStatement(DigitalOutput.D9,
-//                        ActuatorType.BUZZER,
-//                        new DoubleLiteral(100), /* delay */
-//                        new BoolOperationExpression(
-//                                BoolOperator.XOR,
-//                                new DoubleComparisonExpression(
-//                                        ComparisonOperator.GREATER_THAN_EQUALS,
-//                                        new AnalogInputExpression(AnalogInput.A1),
-//                                        new DoubleLiteral(1.5),
-//                                        new DoubleLiteral(40),
-//                                        new DoubleLiteral(20)
-//                                ),
-//                                new NotExpression(
-//                                        new DoubleComparisonExpression(
-//                                                ComparisonOperator.SMALLER_THAN,
-//                                                new DoubleLiteral(2),
-//                                                new AnalogInputExpression(AnalogInput.A2),
-//                                                new DoubleLiteral(40),
-//                                                new DoubleLiteral(20)
-//                                        )
-//                                )
-//                        )
-//                ), new DigitalOutputStatement(
-//                DigitalOutput.D10,
-//                ActuatorType.NEOPIXEL,
-//                new DoubleLiteral(100),
-//                new BoolOperationExpression(
-//                        BoolOperator.AND,
-//                        new DoubleComparisonExpression(
-//                                ComparisonOperator.GREATER_THAN,
-//                                new DoubleLiteral(3),
-//                                new AnalogInputExpression(AnalogInput.A0),
-//                                new DoubleLiteral(100),
-//                                new DoubleLiteral(40)
-//                        ), new DoubleComparisonExpression(
-//                        ComparisonOperator.SMALLER_THAN,
-//                        new DoubleLiteral(2101),
-//                        new AnalogInputExpression(AnalogInput.A2),
-//                        new DoubleLiteral(50),
-//                        new DoubleLiteral(20)
-//                )
-//                )
-//        )
-//        );
-//
-//        var visitor = new CodeGeneratorVisitor();
-//        program.accept(visitor);
-//
-//        System.out.println(visitor.getResult());
-//    }
+    public static void main(String[] args) {
+        var program = new Program(
+                10 /* Hz */,
+                new DigitalOutputStatement(DigitalOutput.D9,
+                        ActuatorType.BUZZER,
+                        new DoubleLiteral(100), /* delay */
+                        new BoolOperationExpression(
+                                BoolOperator.XOR,
+                                new DoubleComparisonExpression(
+                                        ComparisonOperator.GREATER_THAN_EQUALS,
+                                        new AnalogInputExpression(AnalogInput.A1, SensorType.TOUCH),
+                                        new DoubleLiteral(1.5),
+                                        new DoubleLiteral(40),
+                                        new DoubleLiteral(20)
+                                ),
+                                new NotExpression(
+                                        new DoubleComparisonExpression(
+                                                ComparisonOperator.SMALLER_THAN,
+                                                new DoubleLiteral(2),
+                                                new AnalogInputExpression(AnalogInput.A2, SensorType.GSR),
+                                                new DoubleLiteral(40),
+                                                new DoubleLiteral(20)
+                                        )
+                                )
+                        )
+                ), new DigitalOutputStatement(
+                DigitalOutput.D10,
+                ActuatorType.NEOPIXEL,
+                new DoubleLiteral(100),
+                new BoolOperationExpression(
+                        BoolOperator.AND,
+                        new DoubleComparisonExpression(
+                                ComparisonOperator.GREATER_THAN,
+                                new DoubleLiteral(3),
+                                new AnalogInputExpression(AnalogInput.A0, SensorType.BENDING),
+                                new DoubleLiteral(100),
+                                new DoubleLiteral(40)
+                        ), new DoubleComparisonExpression(
+                        ComparisonOperator.SMALLER_THAN,
+                        new DoubleLiteral(2101),
+                        new AnalogInputExpression(AnalogInput.A2, SensorType.ACCELEROMETER),
+                        new DoubleLiteral(50),
+                        new DoubleLiteral(20)
+                )
+                )
+        )
+        );
+
+        var visitor = new CodeGeneratorVisitor();
+        program.accept(visitor);
+
+        System.out.println(visitor.getResult());
+    }
 }
