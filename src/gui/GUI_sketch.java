@@ -1,10 +1,8 @@
 package gui;
 
-import main.*;
 import main.codegen.CodeGenerator;
 import processing.core.*;
 
-import java.beans.Expression;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;

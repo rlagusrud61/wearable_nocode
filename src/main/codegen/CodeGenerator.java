@@ -8,7 +8,7 @@ import java.util.List;
 
 public class CodeGenerator {
 
-    enum AnalogInput {
+    public enum AnalogInput {
         A0,
         A1,
         A2,
