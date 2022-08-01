@@ -6,8 +6,8 @@ import processing.core.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class GUI_sketch extends PApplet {
@@ -63,11 +63,10 @@ public class GUI_sketch extends PApplet {
                 // set Label to the Node (for code generation)
 
                 CodeGenerator.DigitalOutput digitalOutput = CodeGenerator.DigitalOutput.valueOf(outputPin.pinNum);
-
-
                 ExpressionBlock exp = outputPin.connectedExpression;
-                Pin inputPin = outputPin.connectedPin;
 
+// First check if it's a simple statement
+                Pin inputPin = outputPin.connectedPin;
                 if (inputPin != null) {
 
                     CodeGenerator.ActuatorType type = CodeGenerator.ActuatorType.valueOf(outputPin.selected);
@@ -119,7 +118,7 @@ public class GUI_sketch extends PApplet {
                     10, statements.toArray(new CodeGenerator.Statement[0])
             );
             generateCode(file, program);
-            exit();
+//            exit();
         }
 
     }
